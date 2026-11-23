@@ -115,3 +115,44 @@ code { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-siz
 .pasos-grandes li { display: grid; grid-template-columns: 36px 1fr; column-gap: var(--esp-3); align-items: start; padding: var(--esp-4); }
 .pasos-grandes span { grid-row: span 2; margin-bottom: 0; }
 .pasos-grandes p { margin-top: 2px; }
+
+/* ==========================================================================
+   Movimiento al hacer scroll (idea de las páginas de producto de Apple, versión liviana)
+   - Solo CSS: no descarga nada ni usa JavaScript (cuida el rendimiento en Android de gama baja).
+   - @supports: si el navegador no lo soporta, el contenido se ve normal, sin animación.
+   - prefers-reduced-motion: si la persona pidió menos movimiento en su teléfono, no se anima.
+   ========================================================================== */
+.como-fijo p { margin-top: var(--esp-2); }
+@media (min-width: 900px) {
+  .como-funciona { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--esp-12); align-items: start; }
+  .como-fijo { position: sticky; top: calc(var(--barra-alto) + var(--esp-8)); }
+  .como-fijo h2 { font-size: var(--texto-2xl); line-height: var(--linea-2xl); }
+  .como-funciona .pasos-grandes { grid-template-columns: 1fr; gap: var(--esp-6); }
+  .como-funciona .pasos-grandes li { padding: var(--esp-8) var(--esp-6); }
+}
+@media (max-width: 899px) { .como-fijo { margin-bottom: var(--esp-4); } }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Solo desplazamiento, sin transparencia: el texto conserva su contraste en todo momento. */
+    @keyframes aparecer-scroll { from { transform: translateY(32px) scale(0.98); } }
+    .bloque > *, .banda-trabajador, .oficio, .destacado {
+      animation: aparecer-scroll linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+    @media (min-width: 900px) {
+      /* Se resalta el paso del centro (borde y fondo) sin bajar la opacidad del texto:
+         atenuar el texto, como hace Apple, rompería el contraste WCAG para quien lee despacio. */
+      @keyframes enfocar-paso {
+        0%, 100% { border-color: var(--color-borde); background: var(--color-superficie); }
+        40%, 60% { border-color: var(--color-accion); background: var(--color-accion-suave); }
+      }
+      .como-funciona .pasos-grandes li {
+        animation: enfocar-paso linear both;
+        animation-timeline: view();
+        animation-range: cover 10% cover 90%;
+      }
+    }
+  }
+}

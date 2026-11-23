@@ -102,8 +102,13 @@ export default function Inicio() {
         </div>
       </section>
 
-      <section className="bloque" aria-labelledby="t-como">
-        <div className="bloque-cabeza"><h2 id="t-como">Así de fácil</h2></div>
+      {/* Inspirado en las páginas de producto de Apple: en computador el título se queda fijo (sticky)
+          mientras los pasos pasan, y cada paso se ilumina al llegar al centro. Solo CSS, sin descargas extra. */}
+      <section className="bloque como-funciona" aria-labelledby="t-como">
+        <div className="como-fijo">
+          <h2 id="t-como">Así de fácil</h2>
+          <p className="suave">Tres pasos, sin pagar nada en la app. Tú decides con quién trabajar.</p>
+        </div>
         <ol className="pasos-grandes">
           <li><span>1</span><strong>Busca</strong><p>Elige el oficio y tu municipio. Compara precios de referencia y reseñas.</p></li>
           <li><span>2</span><strong>Pide</strong><p>El maestro acepta y acuerdan la visita y el precio final. Pedir no cuesta nada.</p></li>
