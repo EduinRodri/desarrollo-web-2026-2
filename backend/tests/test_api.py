@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app import main
+from app import demo, main, seguridad
 from app.database import Base, get_db
 from app.models import Usuario
 from app.reputacion import calcular_nivel
@@ -20,6 +20,7 @@ def cliente(monkeypatch):
     Sesion = sessionmaker(bind=motor, autoflush=False, expire_on_commit=False)
     monkeypatch.setattr(main, "engine", motor)
     monkeypatch.setattr(main, "SessionLocal", Sesion)
+    monkeypatch.setattr(demo, "SessionLocal", Sesion)
 
     def db_de_prueba():
         db = Sesion()
@@ -191,3 +192,20 @@ def test_reporte_solo_para_admin(cliente):
     r = cliente.get("/reportes", headers=h)
     assert r.status_code == 200 and set(r.json()) == {
         "pedidos_por_oficio", "pedidos_por_zona", "trabajadores_promedio_bajo"}
+
+
+def test_admin_por_correo(cliente, monkeypatch):
+    monkeypatch.setattr(seguridad, "ADMIN_CORREOS", {"jefe@camellapp.co"})
+    h = registrar(cliente, "Jefe@camellapp.co", "Jefa Equipo")
+    assert cliente.get("/usuarios/me", headers=h).json()["es_admin"] is True
+    assert cliente.get("/reportes", headers=h).status_code == 200
+    h2 = registrar(cliente, "otro@test.co")
+    assert cliente.get("/reportes", headers=h2).status_code == 403
+
+
+def test_demo_se_carga_una_vez_y_sin_admin(cliente):
+    assert demo.cargar(con_admin=False) is True
+    assert demo.cargar(con_admin=False) is False  # idempotente
+    with cliente.Sesion() as db:
+        assert db.query(Usuario).filter(Usuario.es_admin.is_(True)).count() == 0
+    assert len(cliente.get("/servicios").json()) == 8

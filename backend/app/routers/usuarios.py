@@ -17,7 +17,7 @@ from ..schemas import (
     UsuarioCrear,
     UsuarioPrivado,
 )
-from ..seguridad import crear_token, hashear, usuario_actual, verificar
+from ..seguridad import crear_token, es_correo_admin, hashear, usuario_actual, verificar
 from .servicios import con_reputacion
 
 router = APIRouter(tags=["Usuarios y sesión"])
@@ -40,6 +40,7 @@ def registrarse(datos: UsuarioCrear, db: Session = Depends(get_db)):
         telefono=datos.telefono,
         contrasena_hash=hashear(datos.contrasena),
         fecha_autorizacion_datos=datetime.now(timezone.utc),
+        es_admin=es_correo_admin(correo),
     )
     db.add(usuario)
     db.commit()
@@ -53,6 +54,9 @@ def iniciar_sesion(form: OAuth2PasswordRequestForm = Depends(), db: Session = De
     # Mismo mensaje si falla el correo o la contraseña: no se revela cuál de los dos existe.
     if usuario is None or not verificar(form.password, usuario.contrasena_hash):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Correo o contraseña incorrectos.")
+    if es_correo_admin(usuario.correo) and not usuario.es_admin:  # se agregó a ADMIN_CORREOS después de registrarse
+        usuario.es_admin = True
+        db.commit()
     return Token(access_token=crear_token(usuario.id), usuario=usuario)
 
 

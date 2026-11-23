@@ -59,6 +59,15 @@ def solo_trabajador(usuario: Usuario = Depends(usuario_actual)) -> Usuario:
     return usuario
 
 
+# El equipo del emprendimiento se define por correo (variable ADMIN_CORREOS, separados por coma).
+# Así no hay una cuenta de administrador con contraseña compartida o publicada.
+ADMIN_CORREOS = {c.strip().lower() for c in os.getenv("ADMIN_CORREOS", "").split(",") if c.strip()}
+
+
+def es_correo_admin(correo: str) -> bool:
+    return correo.lower() in ADMIN_CORREOS
+
+
 def solo_admin(usuario: Usuario = Depends(usuario_actual)) -> Usuario:
     if not usuario.es_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Solo el equipo de Camellapp ve los reportes.")

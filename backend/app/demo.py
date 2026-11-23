@@ -1,16 +1,17 @@
 """Carga datos de demostración (ficticios) para mostrar la app funcionando.
 
-Uso:  uv run python -m app.demo
-Todas las cuentas de demostración usan la contraseña: demo12345
+Uso local:  uv run python -m app.demo   (incluye un admin de prueba, solo en local)
+En producción se cargan solos al arrancar si DEMO_AUTOCARGA=1, SIN cuenta de administrador:
+el administrador real se define con ADMIN_CORREOS (ver seguridad.py).
+Todas las cuentas de demostración usan la contraseña: demo12345 (son ficticias y públicas).
 """
-import os
 import random
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from .database import SessionLocal
-from .main import preparar_base_de_datos
 from .models import Categoria, Pedido, Servicio, Usuario
 from .seguridad import hashear
 
@@ -50,38 +51,26 @@ COMENTARIOS = {
 }
 
 
-def clave_admin() -> str:
-    """En local, la clave de demostración. En una base real (Neon), la del admin se pasa aparte,
-    porque «demo12345» es pública en el README y daría acceso a los reportes."""
-    from .database import DATABASE_URL
-    if DATABASE_URL.startswith("sqlite"):
-        return CLAVE
-    clave = os.getenv("ADMIN_CLAVE")
-    if not clave or len(clave) < 12:
-        raise SystemExit("Define ADMIN_CLAVE (mínimo 12 caracteres) para cargar la demo en una base real.")
-    return clave
-
-
-def usuario(db, nombre, correo, clave=CLAVE, **extra):
+def usuario(db, nombre, correo, **extra):
     u = db.scalar(select(Usuario).where(Usuario.correo == correo))
     if u:
         return u
     u = Usuario(nombre=nombre, correo=correo, telefono="300" + str(random.randint(1000000, 9999999)),
-                contrasena_hash=hashear(clave), fecha_autorizacion_datos=datetime.now(timezone.utc), **extra)
+                contrasena_hash=hashear(CLAVE), fecha_autorizacion_datos=datetime.now(timezone.utc), **extra)
     db.add(u)
     db.flush()
     return u
 
 
-def main():
+def cargar(con_admin: bool) -> bool:
+    """Carga la demo una sola vez. Devuelve True si cargó, False si ya estaba."""
     random.seed(7)
-    preparar_base_de_datos()
     with SessionLocal() as db:
-        if db.scalar(select(Usuario.id).where(Usuario.correo == "admin@camellapp.co")):
-            print("Los datos de demostración ya estaban cargados.")
-            return
+        if db.scalar(select(Usuario.id).where(Usuario.correo == "trabajador1@demo.co")):
+            return False
         categorias = {c.nombre: c.id for c in db.scalars(select(Categoria))}
-        usuario(db, "Equipo Camellapp", "admin@camellapp.co", clave=clave_admin(), es_admin=True)
+        if con_admin:
+            usuario(db, "Equipo Camellapp", "admin@camellapp.co", es_admin=True)
         clientes = [usuario(db, n, f"cliente{i}@demo.co") for i, n in enumerate(
             ["Luisa Fernández", "Mario Rangel", "Sofía Polo", "Kevin Ariza", "Paola Díaz", "Rafael Torres"], 1)]
 
@@ -103,9 +92,24 @@ def main():
                               fecha=datetime.now(timezone.utc) - timedelta(days=30 - j * 4),
                               estado="terminado", estrellas=estrellas,
                               comentario=COMENTARIOS[estrellas][j % len(COMENTARIOS[estrellas])]))
-        db.commit()
-    print("Datos de demostración cargados. Contraseña de todas las cuentas:", CLAVE)
-    print("Cliente: cliente1@demo.co · Trabajador: trabajador1@demo.co · Admin: admin@camellapp.co (en local, la misma clave)")
+        try:
+            db.commit()
+        except IntegrityError:  # dos instancias arrancando a la vez en Vercel: la otra ya cargó
+            db.rollback()
+            return False
+    return True
+
+
+def main():
+    from .main import preparar_base_de_datos  # aquí adentro para evitar importación circular
+    from .database import DATABASE_URL
+    preparar_base_de_datos()
+    local = DATABASE_URL.startswith("sqlite")
+    if cargar(con_admin=local):
+        print("Datos de demostración cargados. Contraseña de todas las cuentas:", CLAVE)
+        print("Cliente: cliente1@demo.co · Trabajador: trabajador1@demo.co" + (" · Admin: admin@camellapp.co" if local else ""))
+    else:
+        print("Los datos de demostración ya estaban cargados.")
 
 
 if __name__ == "__main__":

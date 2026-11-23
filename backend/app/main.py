@@ -36,6 +36,11 @@ def preparar_base_de_datos() -> None:
 @asynccontextmanager
 async def ciclo_de_vida(_: FastAPI):
     preparar_base_de_datos()
+    # En producción la demo se carga sola (una vez) si DEMO_AUTOCARGA=1: nadie tiene que manejar la cadena de la base.
+    if os.getenv("DEMO_AUTOCARGA") == "1":
+        from .demo import cargar
+        if cargar(con_admin=False):
+            log.info("Datos de demostración cargados")
     yield
 
 
