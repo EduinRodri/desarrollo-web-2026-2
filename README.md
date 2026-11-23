@@ -8,7 +8,7 @@ Aplicación web para encontrar, contratar y calificar trabajadores de oficios pr
 | Parte | Tecnología | Carpeta |
 |---|---|---|
 | Back-end (API REST + Swagger) | Python, FastAPI, SQLAlchemy, PostgreSQL (SQLite en local) | `backend/` |
-| Front-end | React (hooks, Context API, Axios, React Router) | `frontend/` (en construcción) |
+| Front-end | React 19 + Vite (hooks, Context API, Axios, React Router) | `frontend/` |
 | Despliegue | Vercel (front y API) + Neon (PostgreSQL) | — |
 
 ## Correr el back-end en local
@@ -20,6 +20,20 @@ uv sync
 uv run uvicorn app.main:app --reload   # Swagger en http://localhost:8000/docs
 uv run pytest -v                       # 16 pruebas
 ```
+
+## Correr el front-end en local
+Requiere Node 20+ y pnpm. Con el back-end corriendo en el puerto 8000:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev        # http://localhost:5173
+```
+
+## Datos de demostración
+`cd backend && uv run python -m app.demo` carga trabajadores, servicios y reseñas ficticios.
+Contraseña de todas las cuentas: `demo12345` (cliente: `cliente1@demo.co`, trabajador: `trabajador1@demo.co`,
+equipo/reportes: `admin@camellapp.co`).
 
 Variables de entorno (producción): `DATABASE_URL` (Neon), `JWT_SECRET`, `FRONTEND_ORIGINS`.
 
