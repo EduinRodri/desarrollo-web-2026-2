@@ -3,6 +3,7 @@
 Uso:  uv run python -m app.demo
 Todas las cuentas de demostración usan la contraseña: demo12345
 """
+import os
 import random
 from datetime import datetime, timedelta, timezone
 
@@ -49,12 +50,24 @@ COMENTARIOS = {
 }
 
 
-def usuario(db, nombre, correo, **extra):
+def clave_admin() -> str:
+    """En local, la clave de demostración. En una base real (Neon), la del admin se pasa aparte,
+    porque «demo12345» es pública en el README y daría acceso a los reportes."""
+    from .database import DATABASE_URL
+    if DATABASE_URL.startswith("sqlite"):
+        return CLAVE
+    clave = os.getenv("ADMIN_CLAVE")
+    if not clave or len(clave) < 12:
+        raise SystemExit("Define ADMIN_CLAVE (mínimo 12 caracteres) para cargar la demo en una base real.")
+    return clave
+
+
+def usuario(db, nombre, correo, clave=CLAVE, **extra):
     u = db.scalar(select(Usuario).where(Usuario.correo == correo))
     if u:
         return u
     u = Usuario(nombre=nombre, correo=correo, telefono="300" + str(random.randint(1000000, 9999999)),
-                contrasena_hash=hashear(CLAVE), fecha_autorizacion_datos=datetime.now(timezone.utc), **extra)
+                contrasena_hash=hashear(clave), fecha_autorizacion_datos=datetime.now(timezone.utc), **extra)
     db.add(u)
     db.flush()
     return u
@@ -68,7 +81,7 @@ def main():
             print("Los datos de demostración ya estaban cargados.")
             return
         categorias = {c.nombre: c.id for c in db.scalars(select(Categoria))}
-        usuario(db, "Equipo Camellapp", "admin@camellapp.co", es_admin=True)
+        usuario(db, "Equipo Camellapp", "admin@camellapp.co", clave=clave_admin(), es_admin=True)
         clientes = [usuario(db, n, f"cliente{i}@demo.co") for i, n in enumerate(
             ["Luisa Fernández", "Mario Rangel", "Sofía Polo", "Kevin Ariza", "Paola Díaz", "Rafael Torres"], 1)]
 
@@ -92,7 +105,7 @@ def main():
                               comentario=COMENTARIOS[estrellas][j % len(COMENTARIOS[estrellas])]))
         db.commit()
     print("Datos de demostración cargados. Contraseña de todas las cuentas:", CLAVE)
-    print("Admin: admin@camellapp.co · Cliente: cliente1@demo.co · Trabajador: trabajador1@demo.co")
+    print("Cliente: cliente1@demo.co · Trabajador: trabajador1@demo.co · Admin: admin@camellapp.co (en local, la misma clave)")
 
 
 if __name__ == "__main__":

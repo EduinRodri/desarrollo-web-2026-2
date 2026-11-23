@@ -34,7 +34,7 @@ pnpm dev        # http://localhost:5173
 ## Datos de demostración
 `cd backend && uv run python -m app.demo` carga trabajadores, servicios y reseñas ficticios.
 Contraseña de todas las cuentas: `demo12345` (cliente: `cliente1@demo.co`, trabajador: `trabajador1@demo.co`,
-equipo/reportes: `admin@camellapp.co`).
+equipo/reportes: `admin@camellapp.co`; en producción su clave es otra y no es pública).
 
 Variables de entorno (producción): `DATABASE_URL` (Neon), `JWT_SECRET`, `FRONTEND_ORIGINS`.
 
