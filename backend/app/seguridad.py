@@ -12,6 +12,10 @@ from .database import get_db
 from .models import Usuario
 
 CLAVE_SECRETA = os.getenv("JWT_SECRET", "solo-para-desarrollo-cambiar-en-produccion")
+# En producción (Vercel define la variable VERCEL) la clave de desarrollo es pública en el repositorio:
+# sería como dejar la llave pegada en la puerta. Si falta JWT_SECRET, la API no arranca.
+if os.getenv("VERCEL") and "JWT_SECRET" not in os.environ:
+    raise RuntimeError("Falta la variable de entorno JWT_SECRET en producción.")
 ALGORITMO = "HS256"
 HORAS_DE_SESION = 8
 

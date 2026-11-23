@@ -18,3 +18,7 @@ dev = ["pytest>=8.3", "httpx>=0.27", "uvicorn>=0.32"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.vercel]
+# Vercel busca aquí la app FastAPI (la variable `app` de app/main.py)
+entrypoint = "app.main:app"
