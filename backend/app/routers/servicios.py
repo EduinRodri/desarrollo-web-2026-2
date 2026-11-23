@@ -37,6 +37,7 @@ def listar_zonas():
 @router.get("/servicios", response_model=list[ServicioSalida])
 def buscar_servicios(
     categoria_id: int | None = None,
+    grupo: str | None = Query(default=None, max_length=60, description="Grupo de oficios, p. ej. «Vehículos»"),
     zona: str | None = None,
     q: str | None = Query(default=None, max_length=60, description="Texto en el título"),
     limite: int = Query(default=20, ge=1, le=50),
@@ -55,6 +56,8 @@ def buscar_servicios(
     )
     if categoria_id is not None:
         consulta = consulta.where(Servicio.categoria_id == categoria_id)
+    if grupo:
+        consulta = consulta.join(Servicio.categoria).where(Categoria.grupo == grupo)
     if zona is not None:
         consulta = consulta.where(Usuario.zona == zona)
     if q:

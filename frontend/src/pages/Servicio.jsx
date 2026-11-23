@@ -1,22 +1,50 @@
 // Detalle de un servicio y botón para pedirlo (RF5).
+// Psicología aplicada:
+// - Ley de Fitts: en el celular el botón «Pedir» queda fijo abajo, grande y al alcance del pulgar.
+// - Menos incertidumbre = menos abandono: «Cómo funciona» en 3 pasos y «no pagas nada ahora».
+// - Prueba social: las últimas reseñas del trabajador, con nombre y fecha.
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
+import { ChevronLeft, ChevronRight, Clock, MapPin, Send } from 'lucide-react'
 import api, { mensajeDeError, pesos } from '../api'
 import { useAuth } from '../context/AuthContext'
-import Estrellas, { Nivel } from '../components/Estrellas'
-import Cargando from '../components/Cargando'
-import Aviso from '../components/Aviso'
+import { useToast } from '../context/ToastContext'
+import { Aviso, Avatar, Calificacion, EstadoVacio, Estrellas, Nivel } from '../components/Ui'
+import { IlustracionPerdido } from '../components/Ilustraciones'
+
+function Esqueleto() {
+  return (
+    <div className="detalle" aria-busy="true">
+      <div className="tarjeta pila">
+        <div className="esqueleto" style={{ height: 14, width: 180 }} />
+        <div className="esqueleto" style={{ height: 32, width: '80%' }} />
+        <div className="esqueleto" style={{ height: 64 }} />
+        <div className="esqueleto" style={{ height: 96 }} />
+      </div>
+      <div className="tarjeta"><div className="esqueleto" style={{ height: 180 }} /></div>
+    </div>
+  )
+}
 
 export default function Servicio() {
   const { id } = useParams() // el :id de la ruta /servicios/:id
   const { usuario } = useAuth()
+  const { avisar } = useToast()
   const navegar = useNavigate()
   const [servicio, setServicio] = useState(null)
+  const [resenas, setResenas] = useState([])
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    api.get(`/servicios/${id}`).then(({ data }) => setServicio(data)).catch((e) => setError(mensajeDeError(e)))
+    setServicio(null)
+    api.get(`/servicios/${id}`)
+      .then(({ data }) => {
+        setServicio(data)
+        return api.get(`/trabajadores/${data.trabajador.id}`)
+      })
+      .then(({ data }) => setResenas(data.resenas.slice(0, 3)))
+      .catch((e) => setError(mensajeDeError(e)))
   }, [id])
 
   const pedir = async () => {
@@ -25,7 +53,8 @@ export default function Servicio() {
     setError('')
     try {
       await api.post('/pedidos', { servicio_id: Number(id) })
-      navegar('/pedidos', { state: { aviso: '¡Pedido enviado! El trabajador debe aceptarlo.' } })
+      avisar(`Pedido enviado. ${servicio.trabajador.nombre.split(' ')[0]} lo verá y te responderá.`)
+      navegar('/pedidos')
     } catch (e) {
       setError(mensajeDeError(e))
     } finally {
@@ -33,38 +62,107 @@ export default function Servicio() {
     }
   }
 
-  if (error && !servicio) return <Aviso>{error}</Aviso>
-  if (!servicio) return <Cargando />
+  if (error && !servicio) {
+    return <EstadoVacio ilustracion={IlustracionPerdido} titulo="No encontramos este servicio"
+      accion={<Link to="/" className="boton">Buscar otros servicios</Link>}>{error}</EstadoVacio>
+  }
+  if (!servicio) return <Esqueleto />
 
   const { trabajador, reputacion: rep } = servicio
   const esMio = usuario?.id === trabajador.id
+  const nombre = trabajador.nombre.split(' ')[0]
+
+  const botonPedir = esMio ? (
+    <Link to="/mi-perfil" className="boton boton-secundario boton-bloque">Es tu servicio · Editar</Link>
+  ) : (
+    <button className="boton boton-bloque boton-pedir" onClick={pedir} disabled={enviando || !servicio.activo}>
+      <Send aria-hidden="true" /> {enviando ? 'Enviando…' : usuario ? 'Pedir este servicio' : 'Ingresa para pedirlo'}
+    </button>
+  )
 
   return (
-    <article className="tarjeta detalle">
-      <Link to="/" className="volver">← Volver a la búsqueda</Link>
-      <span className="etiqueta">{servicio.categoria.grupo} · {servicio.categoria.nombre}</span>
-      <h1>{servicio.titulo}</h1>
-      <p className="precio grande">Desde {pesos.format(servicio.precio_desde)}</p>
-      <p>⏱️ Tiempo estimado: {servicio.tiempo_estimado}</p>
-      <p className="descripcion">{servicio.descripcion}</p>
+    <div className="con-cta-movil">
+      <nav className="miga" aria-label="Ruta">
+        <Link to="/"><ChevronLeft aria-hidden="true" /> Servicios</Link>
+        <span aria-hidden="true">/</span>
+        <Link to={`/?grupo=${encodeURIComponent(servicio.categoria.grupo)}`}>{servicio.categoria.grupo}</Link>
+      </nav>
 
-      <div className="caja-trabajador">
-        <div className="avatar" aria-hidden="true">{trabajador.nombre[0]}</div>
-        <div>
-          <Link to={`/trabajadores/${trabajador.id}`}><strong>{trabajador.nombre}</strong></Link>
-          <div className="tenue">📍 {trabajador.zona}</div>
-          <div><Nivel reputacion={rep} /> {rep.resenas > 0 && <><Estrellas valor={rep.promedio} /> {rep.promedio} ({rep.resenas} reseñas)</>}</div>
-        </div>
+      <div className="detalle">
+        <article className="tarjeta">
+          <span className="texto-sm suave">{servicio.categoria.nombre}</span>
+          <h1>{servicio.titulo}</h1>
+          <div className="fila-flex"><Nivel reputacion={rep} /> <Calificacion reputacion={rep} /></div>
+
+          {/* En el celular, quién hace el trabajo va arriba: es lo que más genera confianza */}
+          <Link to={`/trabajadores/${trabajador.id}`} className="persona caja-persona solo-movil">
+            <Avatar nombre={trabajador.nombre} />
+            <div className="persona-datos" style={{ flex: 1 }}>
+              <div className="persona-nombre">{trabajador.nombre}</div>
+              <span className="meta"><MapPin aria-hidden="true" /> {trabajador.zona} · Ver perfil</span>
+            </div>
+            <ChevronRight aria-hidden="true" className="suave" />
+          </Link>
+
+          <div className="datos-clave">
+            <div className="dato"><span>Precio de referencia</span><strong>Desde {pesos.format(servicio.precio_desde)}</strong></div>
+            <div className="dato"><span><Clock aria-hidden="true" /> Tiempo estimado</span><strong>{servicio.tiempo_estimado}</strong></div>
+          </div>
+
+          <h2 className="texto-md">Qué incluye</h2>
+          <p className="descripcion" style={{ marginTop: 'var(--esp-2)' }}>{servicio.descripcion}</p>
+
+          <h2 className="texto-md" style={{ marginTop: 'var(--esp-6)' }}>Cómo funciona</h2>
+          <ol className="pasos">
+            <li>Pides el servicio. No pagas nada en la app.</li>
+            <li>{nombre} acepta y acuerdan la visita y el precio final.</li>
+            <li>Cuando termine, lo calificas para ayudar a tus vecinos.</li>
+          </ol>
+
+          {resenas.length > 0 && (
+            <>
+              <div className="seccion-titulo">
+                <h2 className="texto-md">Lo que dicen de {nombre}</h2>
+                <Link to={`/trabajadores/${trabajador.id}`} className="texto-sm">Ver todas</Link>
+              </div>
+              {resenas.map((r, i) => (
+                <div key={i} className="resena">
+                  <div className="fila-flex"><Estrellas valor={r.estrellas} /> <strong className="texto-sm">{r.cliente}</strong>
+                    <span className="texto-xs suave">· {new Date(r.fecha).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}</span></div>
+                  <p className="texto-sm">{r.comentario}</p>
+                </div>
+              ))}
+            </>
+          )}
+          <p className="texto-xs suave solo-movil" style={{ textAlign: 'center', marginTop: 'var(--esp-4)' }}>No pagas nada ahora · Puedes cancelar antes de que termine</p>
+        </article>
+
+        <aside className="tarjeta panel-pedido pila solo-escritorio">
+          <Link to={`/trabajadores/${trabajador.id}`} className="persona" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Avatar nombre={trabajador.nombre} tam="avatar-lg" />
+            <div className="persona-datos">
+              <div className="persona-nombre">{trabajador.nombre}</div>
+              <span className="meta"><MapPin aria-hidden="true" /> {trabajador.zona}</span>
+            </div>
+          </Link>
+          {trabajador.descripcion && <p className="texto-sm suave">{trabajador.descripcion}</p>}
+          <Aviso>{error}</Aviso>
+          {botonPedir}
+          {!esMio && <p className="texto-xs suave" style={{ textAlign: 'center' }}>No pagas nada ahora · Puedes cancelar antes de que termine</p>}
+        </aside>
       </div>
 
-      <Aviso>{error}</Aviso>
-      {esMio ? (
-        <p className="tenue">Este es tu servicio. Puedes editarlo en «Mi perfil».</p>
-      ) : (
-        <button className="boton boton-grande" onClick={pedir} disabled={enviando || !servicio.activo}>
-          {enviando ? 'Enviando…' : usuario ? 'Pedir este servicio' : 'Ingresa para pedirlo'}
-        </button>
+      {!esMio && (
+        <div className="cta-movil">
+          <div>
+            <span className="precio-etiqueta">Desde</span>
+            <span className="precio">{pesos.format(servicio.precio_desde)}</span>
+          </div>
+          <button className="boton" onClick={pedir} disabled={enviando || !servicio.activo}>
+            <Send aria-hidden="true" /> {enviando ? 'Enviando…' : usuario ? 'Pedir servicio' : 'Ingresa para pedir'}
+          </button>
+        </div>
       )}
-    </article>
+    </div>
   )
 }

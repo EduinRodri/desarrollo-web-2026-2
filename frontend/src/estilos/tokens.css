@@ -1,0 +1,97 @@
+/* ==========================================================================
+   Camellapp — Tokens de diseño
+   Tres capas, como Atlassian, Carbon y Material 3:
+   1) Primitivos: valores crudos (una paleta, una escala). No se usan directo en componentes.
+   2) Semánticos: el PARA QUÉ (texto, superficie, acción). Claro y oscuro con light-dark().
+   3) De componente: decisiones de un componente concreto (botón, tarjeta).
+   ========================================================================== */
+
+:root {
+  color-scheme: light dark;
+
+  /* ---------- 1. Primitivos ---------- */
+  /* Terracota (marca): el color del ladrillo y el barro, el material del oficio */
+  --terra-50: #fdf4ef;  --terra-100: #f9e2d6;  --terra-200: #f2c1a9;  --terra-300: #e9997a;
+  --terra-400: #db7552; --terra-500: #c45a34;  --terra-600: #a93f1d;  --terra-700: #8c3216;
+  --terra-800: #6e2812; --terra-900: #4f1c0c;  --terra-950: #2c0f06;
+  /* Verde (solo significado: listo, terminado, éxito) */
+  --verde-50: #ecf8f2; --verde-100: #d3efe1; --verde-300: #6fc6a0; --verde-600: #0e7a5a; --verde-700: #0b6249; --verde-900: #083a2c;
+  /* Amarillo sol (acento, estrellas, «Recomendado») */
+  --sol-100: #fff4cc; --sol-300: #ffd25a; --sol-500: #f5b300; --sol-700: #7f5800; --sol-900: #5c3f00;
+  /* Neutros arena: cálidos, para que la app se sienta cercana y no de oficina */
+  --gris-0: #ffffff;  --gris-25: #fffcf8; --gris-50: #f7f3ec; --gris-100: #ede6db; --gris-200: #ddd3c5;
+  --gris-300: #c3b7a8; --gris-500: #7a6d60; --gris-600: #5e5248; --gris-700: #463c35; --gris-800: #2d2622;
+  --gris-850: #241e1b; --gris-900: #1b1714; --gris-950: #13100e;
+  /* Estados */
+  --rojo-100: #fde8e6; --rojo-600: #c4321f; --rojo-300: #ff9a8c; --rojo-900: #3d1611;
+  --azul-100: #e4edfb; --azul-700: #2453a6; --azul-300: #9dbcf5; --azul-900: #13274a;
+
+  /* Tipografía — escala inspirada en Material 3 (tamaño / interlineado) */
+  --fuente: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --texto-xs: 0.75rem;   --linea-xs: 1rem;      /* 12/16 etiquetas */
+  --texto-sm: 0.875rem;  --linea-sm: 1.25rem;   /* 14/20 cuerpo pequeño */
+  --texto-md: 1rem;      --linea-md: 1.5rem;    /* 16/24 cuerpo */
+  --texto-lg: 1.25rem;   --linea-lg: 1.75rem;   /* 20/28 título */
+  --texto-xl: 1.5rem;    --linea-xl: 2rem;      /* 24/32 titular */
+  --texto-2xl: 2rem;     --linea-2xl: 2.5rem;   /* 32/40 portada */
+  --peso-normal: 400; --peso-medio: 600; --peso-fuerte: 700;
+
+  /* Espaciado — base 4 px (Atlassian / Carbon) */
+  --esp-1: 0.25rem; --esp-2: 0.5rem; --esp-3: 0.75rem; --esp-4: 1rem; --esp-5: 1.25rem;
+  --esp-6: 1.5rem;  --esp-8: 2rem;   --esp-12: 3rem;   --esp-16: 4rem;
+
+  /* Radios (Material 3: 4, 8, 12, 16, full) */
+  --radio-sm: 6px; --radio-md: 10px; --radio-lg: 14px; --radio-xl: 20px; --radio-full: 999px;
+
+  /* Movimiento (curva estándar de Material 3) */
+  --curva: cubic-bezier(0.2, 0, 0, 1);
+  --curva-entrada: cubic-bezier(0, 0, 0, 1);
+  --dur-rapida: 120ms; --dur-media: 200ms; --dur-lenta: 300ms;
+
+  /* ---------- 2. Semánticos ---------- */
+  --color-fondo:            light-dark(var(--gris-50), var(--gris-950));
+  --color-superficie:       light-dark(var(--gris-0), var(--gris-900));
+  --color-superficie-alta:  light-dark(var(--gris-0), var(--gris-850));  /* en oscuro, lo elevado es más claro */
+  --color-superficie-suave: light-dark(var(--gris-25), var(--gris-850));
+  --color-texto:            light-dark(var(--gris-900), var(--gris-50));
+  --color-texto-suave:      light-dark(var(--gris-600), var(--gris-300));
+  --color-borde:            light-dark(var(--gris-100), var(--gris-800));
+  --color-borde-fuerte:     light-dark(var(--gris-200), var(--gris-700));
+  --color-borde-campo:      light-dark(#958676, var(--gris-500));   /* WCAG 1.4.11: 3:1 para ver dónde escribir */
+
+  --color-accion:           light-dark(var(--terra-600), var(--terra-300));
+  --color-accion-hover:     light-dark(var(--terra-700), var(--terra-200));
+  --color-sobre-accion:     light-dark(var(--gris-0), var(--terra-950));
+  --color-accion-suave:     light-dark(var(--terra-50), var(--terra-950));
+  --color-accion-texto:     light-dark(var(--terra-700), var(--terra-300));
+
+  --color-acento:           var(--sol-500);
+  --color-acento-suave:     light-dark(var(--sol-100), var(--sol-900));
+  --color-acento-texto:     light-dark(var(--sol-700), var(--sol-300));
+
+  --color-error:            light-dark(var(--rojo-600), var(--rojo-300));
+  --color-error-suave:      light-dark(var(--rojo-100), var(--rojo-900));
+  --color-info:             light-dark(var(--azul-700), var(--azul-300));
+  --color-info-suave:       light-dark(var(--azul-100), var(--azul-900));
+  --color-exito:            light-dark(var(--verde-700), var(--verde-300));
+  --color-exito-suave:      light-dark(var(--verde-50), var(--verde-900));
+
+  --color-foco:             light-dark(var(--terra-700), var(--sol-300));
+  --color-velo:             rgb(27 23 20 / 0.55);
+
+  --sombra-1: 0 1px 2px rgb(43 30 22 / 0.06), 0 1px 3px rgb(43 30 22 / 0.08);
+  --sombra-2: 0 4px 12px rgb(43 30 22 / 0.08), 0 2px 4px rgb(43 30 22 / 0.06);
+  --sombra-3: 0 12px 32px rgb(43 30 22 / 0.18), 0 4px 8px rgb(43 30 22 / 0.08);
+
+  /* ---------- 3. De componente ---------- */
+  --boton-alto: 48px;          /* área táctil: Material 3 pide 48 dp */
+  --boton-alto-sm: 40px;
+  --campo-alto: 48px;
+  --tarjeta-relleno: var(--esp-4);
+  --barra-alto: 60px;
+  --contenido-max: 1120px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-rapida: 0ms; --dur-media: 0ms; --dur-lenta: 0ms; }
+}

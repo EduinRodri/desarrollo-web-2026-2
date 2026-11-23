@@ -1,17 +1,32 @@
-// Pantalla principal: buscar servicios por oficio, zona y texto (RF4).
-// Los filtros viven en la URL (?categoria=1&zona=Malambo): se pueden compartir por WhatsApp.
-import { useEffect, useState } from 'react'
+// Pantalla principal: buscar servicios (RF4).
+// Psicología aplicada:
+// - Ley de Hick: 6 grupos con ícono en vez de una lista de 43 oficios → se decide más rápido.
+// - Reducir el riesgo percibido: tres garantías visibles antes de pedir.
+// - Prueba social bien calculada: se ordena con un promedio bayesiano, para que un 5,0 con 1 reseña
+//   no le gane a un 4,8 con 50 (Baymard: la gente confía más en muchas reseñas que en un promedio alto).
+// Los filtros viven en la URL (?grupo=Vehículos&zona=Malambo): se pueden compartir por WhatsApp.
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { HandCoins, LayoutGrid, Search, ShieldCheck, UserCheck } from 'lucide-react'
 import api, { mensajeDeError } from '../api'
 import { useCatalogo } from '../hooks/useCatalogo'
 import TarjetaServicio from '../components/TarjetaServicio'
-import Cargando from '../components/Cargando'
-import Aviso from '../components/Aviso'
+import { Aviso, EstadoVacio, TarjetaEsqueleto } from '../components/Ui'
+import { IlustracionBusqueda } from '../components/Ilustraciones'
+import { ICONOS_GRUPO, NOMBRE_CORTO } from '../components/oficios'
+
+const PROMEDIO_BASE = 4   // lo que se supone de alguien sin historial
+const PESO_BASE = 3       // cuántas reseñas «imaginarias» pesa esa suposición
+
+function puntaje({ reputacion: r }) {
+  const n = r?.resenas ?? 0
+  return (PROMEDIO_BASE * PESO_BASE + (r?.promedio ?? 0) * n) / (PESO_BASE + n)
+}
 
 export default function Buscar() {
-  const { porGrupo, zonas } = useCatalogo()
+  const { grupos, zonas } = useCatalogo()
   const [params, setParams] = useSearchParams()
-  const categoria = params.get('categoria') ?? ''
+  const grupo = params.get('grupo') ?? ''
   const zona = params.get('zona') ?? ''
   const q = params.get('q') ?? ''
 
@@ -26,83 +41,101 @@ export default function Buscar() {
     setParams(nuevos, { replace: true })
   }
 
-  // "Debounce": espera 400 ms después de la última tecla antes de buscar,
-  // para no mandar una petición por cada letra.
+  // «Debounce»: espera 400 ms después de la última tecla antes de buscar.
   useEffect(() => {
     const t = setTimeout(() => {
-      if (texto !== q) cambiarFiltro('q', texto.trim())
+      if (texto.trim() !== q) cambiarFiltro('q', texto.trim())
     }, 400)
     return () => clearTimeout(t)
   }, [texto]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cada vez que cambian los filtros, se consulta la API.
   useEffect(() => {
     const control = new AbortController() // cancela la búsqueda anterior si llega una nueva
     setCargando(true)
     setError('')
     api
       .get('/servicios', {
-        params: { categoria_id: categoria || undefined, zona: zona || undefined, q: q || undefined },
+        params: { grupo: grupo || undefined, zona: zona || undefined, q: q || undefined },
         signal: control.signal,
       })
       .then(({ data }) => setServicios(data))
-      .catch((e) => {
-        if (e.name !== 'CanceledError') setError(mensajeDeError(e))
-      })
-      .finally(() => setCargando(false))
+      .catch((e) => { if (e.name !== 'CanceledError') setError(mensajeDeError(e)) })
+      .finally(() => { if (!control.signal.aborted) setCargando(false) })
     return () => control.abort()
-  }, [categoria, zona, q])
+  }, [grupo, zona, q])
+
+  const ordenados = useMemo(() => [...servicios].sort((a, b) => puntaje(b) - puntaje(a)), [servicios])
+  const hayFiltros = grupo || zona || q
 
   return (
     <>
       <section className="portada">
-        <h1>Encuentra quién te haga el trabajo, cerca de ti</h1>
-        <p>Plomeros, electricistas, mecánicos y más en Malambo y el área metropolitana de Barranquilla.</p>
+        <h1>¿Qué necesitas arreglar hoy?</h1>
+        <p>Trabajadores de tu zona, con reseñas de clientes reales.</p>
+
+        <form className="buscador" role="search" onSubmit={(e) => e.preventDefault()}>
+          <div className="caja-busqueda">
+            <Search aria-hidden="true" />
+            <label htmlFor="q" className="solo-lector">Buscar un servicio</label>
+            <input id="q" type="search" enterKeyHint="search" placeholder="Fuga, aire, pintura…"
+              value={texto} onChange={(e) => setTexto(e.target.value)} autoComplete="off" />
+          </div>
+          <div>
+            <label htmlFor="zona" className="solo-lector">Zona</label>
+            <select id="zona" value={zona} onChange={(e) => cambiarFiltro('zona', e.target.value)}>
+              <option value="">Todas las zonas</option>
+              {zonas.map((z) => <option key={z}>{z}</option>)}
+            </select>
+          </div>
+        </form>
       </section>
 
-      <form className="filtros tarjeta" onSubmit={(e) => e.preventDefault()} role="search">
-        <label>
-          ¿Qué necesitas?
-          <input
-            type="search"
-            placeholder="Ej.: fuga, pintura, aire…"
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-          />
-        </label>
-        <label>
-          Oficio
-          <select value={categoria} onChange={(e) => cambiarFiltro('categoria', e.target.value)}>
-            <option value="">Todos los oficios</option>
-            {Object.entries(porGrupo).map(([grupo, lista]) => (
-              <optgroup key={grupo} label={grupo}>
-                {lista.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-              </optgroup>
-            ))}
-          </select>
-        </label>
-        <label>
-          Zona
-          <select value={zona} onChange={(e) => cambiarFiltro('zona', e.target.value)}>
-            <option value="">Todas las zonas</option>
-            {zonas.map((z) => <option key={z}>{z}</option>)}
-          </select>
-        </label>
-      </form>
+      <div className="chips" role="group" aria-label="Filtrar por tipo de oficio">
+        <button type="button" className="chip" aria-pressed={!grupo} onClick={() => cambiarFiltro('grupo', '')}>
+          <LayoutGrid aria-hidden="true" /> Todos
+        </button>
+        {Object.keys(ICONOS_GRUPO).filter((g) => grupos.includes(g)).map((g) => {
+          const Icono = ICONOS_GRUPO[g] ?? LayoutGrid
+          return (
+            <button key={g} type="button" className="chip" aria-pressed={grupo === g}
+              onClick={() => cambiarFiltro('grupo', grupo === g ? '' : g)} title={g}>
+              <Icono aria-hidden="true" /> {NOMBRE_CORTO[g] ?? g}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="barra-resultados">
+        <h2 className="texto-sm suave" style={{ fontWeight: 500 }} aria-live="polite">
+          {cargando ? 'Buscando…' : `${ordenados.length} ${ordenados.length === 1 ? 'servicio' : 'servicios'}${zona ? ` en ${zona}` : ''}`}
+        </h2>
+        {hayFiltros && !cargando && (
+          <button type="button" className="boton boton-fantasma boton-sm"
+            onClick={() => { setTexto(''); setParams({}, { replace: true }) }}>Quitar filtros</button>
+        )}
+      </div>
 
       <Aviso>{error}</Aviso>
       {cargando ? (
-        <Cargando texto="Buscando servicios…" />
-      ) : servicios.length === 0 && !error ? (
-        <div className="vacio">
-          <p>😕 No encontramos servicios con esos filtros.</p>
-          <p className="tenue">Prueba con otra zona u otro oficio.</p>
+        <div className="rejilla" aria-busy="true">
+          {Array.from({ length: 6 }, (_, i) => <TarjetaEsqueleto key={i} />)}
         </div>
+      ) : ordenados.length === 0 && !error ? (
+        <EstadoVacio ilustracion={IlustracionBusqueda} titulo="No encontramos ese servicio por aquí"
+          accion={hayFiltros && <button className="boton boton-secundario" onClick={() => { setTexto(''); setParams({}, { replace: true }) }}>Ver todos los servicios</button>}>
+          Prueba con otra palabra, otro tipo de oficio o todas las zonas.
+        </EstadoVacio>
       ) : (
         <div className="rejilla">
-          {servicios.map((s) => <TarjetaServicio key={s.id} servicio={s} />)}
+          {ordenados.map((s) => <TarjetaServicio key={s.id} servicio={s} />)}
         </div>
       )}
+
+      <section className="garantias" aria-label="Cómo te cuidamos">
+        <div><ShieldCheck aria-hidden="true" /><span><strong>Reseñas reales</strong>Solo califica quien terminó un pedido.</span></div>
+        <div><HandCoins aria-hidden="true" /><span><strong>Pedir no cuesta</strong>El precio final lo acuerdas con el trabajador.</span></div>
+        <div><UserCheck aria-hidden="true" /><span><strong>Tú decides</strong>Puedes cancelar mientras no esté terminado.</span></div>
+      </section>
     </>
   )
 }

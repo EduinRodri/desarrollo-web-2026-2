@@ -1,32 +1,36 @@
 import { memo } from 'react'
 import { Link } from 'react-router'
+import { MapPin } from 'lucide-react'
 import { pesos } from '../api'
-import Estrellas, { Nivel } from './Estrellas'
+import { Avatar, Calificacion, Nivel } from './Ui'
 
-// memo: si los datos del servicio no cambian, la tarjeta no se vuelve a dibujar.
-function TarjetaServicio({ servicio }) {
+// Orden de lectura pensado para decidir rápido (Thumbtack / Baymard):
+// quién es → qué hace → qué tan confiable es → cuánto cuesta.
+// memo: si los datos no cambian, la tarjeta no se vuelve a dibujar.
+function TarjetaServicio({ servicio, mostrarPersona = true }) {
   const { reputacion: rep, trabajador } = servicio
   return (
-    <Link to={`/servicios/${servicio.id}`} className="tarjeta tarjeta-servicio">
-      <div className="tarjeta-cabeza">
-        <span className="etiqueta">{servicio.categoria.nombre}</span>
-        <Nivel reputacion={rep} />
+    <Link to={`/servicios/${servicio.id}`} className="tarjeta servicio-tarjeta">
+      {mostrarPersona && (
+        <div className="persona">
+          <Avatar nombre={trabajador.nombre} />
+          <div className="persona-datos">
+            <div className="persona-nombre">{trabajador.nombre}</div>
+            <span className="meta"><MapPin aria-hidden="true" /> {trabajador.zona}</span>
+          </div>
+        </div>
+      )}
+      <div className="pila-sm">
+        <span className="texto-xs suave">{servicio.categoria.nombre}</span>
+        <h3>{servicio.titulo}</h3>
       </div>
-      <h3>{servicio.titulo}</h3>
-      <p className="tenue recorte">{servicio.descripcion}</p>
-      <div className="tarjeta-pie">
-        <div>
-          <strong>{trabajador.nombre}</strong>
-          <div className="tenue">📍 {trabajador.zona}</div>
-        </div>
-        <div className="derecha">
-          <div className="precio">Desde {pesos.format(servicio.precio_desde)}</div>
-          {rep?.resenas ? (
-            <small><Estrellas valor={rep.promedio} /> ({rep.resenas})</small>
-          ) : (
-            <small className="tenue">Sin reseñas aún</small>
-          )}
-        </div>
+      <div className="fila-flex">
+        <Nivel reputacion={rep} />
+        <Calificacion reputacion={rep} />
+      </div>
+      <div className="servicio-pie">
+        <span><span className="precio-etiqueta">Desde</span><span className="precio">{pesos.format(servicio.precio_desde)}</span></span>
+        <span className="texto-sm suave">{servicio.tiempo_estimado}</span>
       </div>
     </Link>
   )

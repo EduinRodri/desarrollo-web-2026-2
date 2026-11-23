@@ -1,12 +1,13 @@
 // Rutas y navegación de Camellapp.
 // Cada pantalla se carga solo cuando se visita (React.lazy): la primera carga es más liviana.
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router'
+import { Link, Route, Routes, useLocation } from 'react-router'
 import Navbar from './components/Navbar'
 import RutaProtegida from './components/RutaProtegida'
-import Cargando from './components/Cargando'
+import { Logo } from './components/Marca'
+// La búsqueda es la pantalla de entrada: se carga con la app para no esperar una segunda descarga (mejor LCP).
+import Buscar from './pages/Buscar'
 
-const Buscar = lazy(() => import('./pages/Buscar'))
 const Servicio = lazy(() => import('./pages/Servicio'))
 const Trabajador = lazy(() => import('./pages/Trabajador'))
 const Ingresar = lazy(() => import('./pages/Ingresar'))
@@ -17,30 +18,41 @@ const Reportes = lazy(() => import('./pages/Reportes'))
 const NoEncontrado = lazy(() => import('./pages/NoEncontrado'))
 
 export default function App() {
+  const { pathname } = useLocation()
   return (
     <>
+      <a href="#contenido" className="saltar">Saltar al contenido</a>
       <Navbar />
-      <main className="contenedor">
-        <Suspense fallback={<Cargando />}>
-          <Routes>
-            <Route path="/" element={<Buscar />} />
-            <Route path="/servicios/:id" element={<Servicio />} />
-            <Route path="/trabajadores/:id" element={<Trabajador />} />
-            <Route path="/ingresar" element={<Ingresar />} />
-            <Route path="/registro" element={<Registro />} />
-            {/* Rutas que exigen sesión */}
-            <Route element={<RutaProtegida />}>
-              <Route path="/mi-perfil" element={<MiPerfil />} />
-              <Route path="/pedidos" element={<Pedidos />} />
-            </Route>
-            <Route element={<RutaProtegida soloAdmin />}>
-              <Route path="/reportes" element={<Reportes />} />
-            </Route>
-            <Route path="*" element={<NoEncontrado />} />
-          </Routes>
-        </Suspense>
+      <main id="contenido" className="contenedor">
+        {/* key: cada página entra con una transición suave al navegar */}
+        <div key={pathname} className="pagina">
+          <Suspense fallback={null}>
+            <Routes>
+              <Route path="/" element={<Buscar />} />
+              <Route path="/servicios/:id" element={<Servicio />} />
+              <Route path="/trabajadores/:id" element={<Trabajador />} />
+              <Route path="/ingresar" element={<Ingresar />} />
+              <Route path="/registro" element={<Registro />} />
+              {/* Rutas que exigen sesión */}
+              <Route element={<RutaProtegida />}>
+                <Route path="/mi-perfil" element={<MiPerfil />} />
+                <Route path="/pedidos" element={<Pedidos />} />
+              </Route>
+              <Route element={<RutaProtegida soloAdmin />}>
+                <Route path="/reportes" element={<Reportes />} />
+              </Route>
+              <Route path="*" element={<NoEncontrado />} />
+            </Routes>
+          </Suspense>
+        </div>
       </main>
-      <footer className="pie">Camellapp · Malambo y área metropolitana de Barranquilla · Proyecto académico 2026</footer>
+      <footer className="pie">
+        <div className="pie-interior">
+          <Link to="/" className="logo" aria-label="Camellapp, inicio"><Logo /></Link>
+          <span>Oficios de confianza en Malambo y el área metropolitana de Barranquilla.</span>
+          <span>Proyecto académico · 2026</span>
+        </div>
+      </footer>
     </>
   )
 }

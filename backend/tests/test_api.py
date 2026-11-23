@@ -124,6 +124,10 @@ def test_busqueda_por_oficio_y_zona(cliente):
     assert len(cliente.get("/servicios", params={"categoria_id": categoria, "zona": "Malambo"}).json()) == 1
     assert cliente.get("/servicios", params={"zona": "Soledad"}).json() == []
     assert cliente.get("/servicios", params={"zona": "Bogotá"}).status_code == 400
+    grupo = cliente.get("/categorias").json()[0]["grupo"]  # el grupo del servicio creado
+    otro = next(c["grupo"] for c in cliente.get("/categorias").json() if c["grupo"] != grupo)
+    assert len(cliente.get("/servicios", params={"grupo": grupo}).json()) == 1
+    assert cliente.get("/servicios", params={"grupo": otro}).json() == []
 
 
 def test_nadie_pide_su_propio_servicio(cliente):
