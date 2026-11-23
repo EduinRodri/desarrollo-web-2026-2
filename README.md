@@ -9,6 +9,7 @@ Aplicación web para encontrar, contratar y calificar trabajadores de oficios pr
 |---|---|---|
 | Back-end (API REST + Swagger) | Python, FastAPI, SQLAlchemy, PostgreSQL (SQLite en local) | `backend/` |
 | Front-end | React 19 + Vite (hooks, Context API, Axios, React Router) | `frontend/` |
+| Marca y sistema de diseño | Tokens CSS, Figtree, Lucide, assets SVG propios | [`docs/marca.md`](docs/marca.md) · en la app: `/marca` |
 | Despliegue | Vercel (front y API) + Neon (PostgreSQL) | — |
 
 ## Correr el back-end en local

@@ -14,14 +14,8 @@ import TarjetaServicio from '../components/TarjetaServicio'
 import { Aviso, EstadoVacio, TarjetaEsqueleto } from '../components/Ui'
 import { IlustracionBusqueda } from '../components/Ilustraciones'
 import { ICONOS_GRUPO, NOMBRE_CORTO } from '../components/oficios'
+import { puntaje } from '../reputacion'
 
-const PROMEDIO_BASE = 4   // lo que se supone de alguien sin historial
-const PESO_BASE = 3       // cuántas reseñas «imaginarias» pesa esa suposición
-
-function puntaje({ reputacion: r }) {
-  const n = r?.resenas ?? 0
-  return (PROMEDIO_BASE * PESO_BASE + (r?.promedio ?? 0) * n) / (PESO_BASE + n)
-}
 
 export default function Buscar() {
   const { grupos, zonas } = useCatalogo()

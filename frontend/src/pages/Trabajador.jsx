@@ -22,7 +22,7 @@ export default function Trabajador() {
 
   if (error) {
     return <EstadoVacio ilustracion={IlustracionPerdido} titulo="No encontramos este perfil"
-      accion={<Link to="/" className="boton">Buscar trabajadores</Link>}>{error}</EstadoVacio>
+      accion={<Link to="/buscar" className="boton">Buscar trabajadores</Link>}>{error}</EstadoVacio>
   }
   if (!perfil) return <div className="tarjeta" aria-busy="true"><div className="esqueleto" style={{ height: 180 }} /></div>
 

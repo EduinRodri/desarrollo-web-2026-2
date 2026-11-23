@@ -64,7 +64,7 @@ export default function Servicio() {
 
   if (error && !servicio) {
     return <EstadoVacio ilustracion={IlustracionPerdido} titulo="No encontramos este servicio"
-      accion={<Link to="/" className="boton">Buscar otros servicios</Link>}>{error}</EstadoVacio>
+      accion={<Link to="/buscar" className="boton">Buscar otros servicios</Link>}>{error}</EstadoVacio>
   }
   if (!servicio) return <Esqueleto />
 
@@ -83,9 +83,9 @@ export default function Servicio() {
   return (
     <div className="con-cta-movil">
       <nav className="miga" aria-label="Ruta">
-        <Link to="/"><ChevronLeft aria-hidden="true" /> Servicios</Link>
+        <Link to="/buscar"><ChevronLeft aria-hidden="true" /> Servicios</Link>
         <span aria-hidden="true">/</span>
-        <Link to={`/?grupo=${encodeURIComponent(servicio.categoria.grupo)}`}>{servicio.categoria.grupo}</Link>
+        <Link to={`/buscar?grupo=${encodeURIComponent(servicio.categoria.grupo)}`}>{servicio.categoria.grupo}</Link>
       </nav>
 
       <div className="detalle">

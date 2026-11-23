@@ -146,7 +146,7 @@ export default function Pedidos() {
       ) : estado.lista.length === 0 ? (
         <EstadoVacio ilustracion={IlustracionPedidos}
           titulo={como === 'cliente' ? 'Todavía no has pedido nada' : 'Aún no te han pedido servicios'}
-          accion={como === 'cliente' && <Link to="/" className="boton"><Search aria-hidden="true" /> Buscar un servicio</Link>}>
+          accion={como === 'cliente' && <Link to="/buscar" className="boton"><Search aria-hidden="true" /> Buscar un servicio</Link>}>
           {como === 'cliente' ? 'Cuando pidas un servicio, aquí verás cómo va.' : 'Cuando un cliente te pida, te aparecerá aquí para aceptarlo.'}
         </EstadoVacio>
       ) : (

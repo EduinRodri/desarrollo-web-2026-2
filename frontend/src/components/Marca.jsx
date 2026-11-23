@@ -19,3 +19,9 @@ export function Logo() {
     </>
   )
 }
+
+// El punto sol: activo distintivo de la marca. Significa «listo, bien hecho».
+// Regla del manual: uno por composición; cierra los titulares de marca.
+export function PuntoSol() {
+  return <span className="punto-sol" aria-hidden="true" />
+}

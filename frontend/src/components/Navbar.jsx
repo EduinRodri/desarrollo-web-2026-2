@@ -31,7 +31,7 @@ export default function Navbar() {
           {abierto ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
         </button>
         <nav id="menu-principal" className={abierto ? 'menu abierto' : 'menu'} aria-label="Principal">
-          <NavLink to="/" end><Search aria-hidden="true" size={18} /> Buscar</NavLink>
+          <NavLink to="/buscar"><Search aria-hidden="true" size={18} /> Buscar</NavLink>
           {usuario ? (
             <>
               <NavLink to="/pedidos"><ClipboardList aria-hidden="true" size={18} /> Mis pedidos</NavLink>

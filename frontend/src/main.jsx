@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router'
 import '@fontsource-variable/figtree/wght.css' // fuente autohospedada (OFL), con font-display: swap
 import './estilos/tokens.css'
 import './estilos/app.css'
+import './estilos/marca.css'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
