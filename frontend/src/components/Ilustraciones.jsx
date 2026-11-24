@@ -56,12 +56,13 @@ function Mecedora(props) {
   )
 }
 
-function Oficio({ x, y, Icono }) {
+function Oficio({ x, y, Icono, tam = 60 }) {
+  const m = tam / 2, i = tam / 4
   return (
     <g>
-      <rect x={x - 30} y={y - 30} width="60" height="60" rx="18" fill="var(--color-superficie)"
+      <rect x={x - m} y={y - m} width={tam} height={tam} rx={tam * 0.3} fill="var(--color-superficie)"
         stroke="var(--color-accion)" strokeWidth="3" />
-      <Icono x={x - 15} y={y - 15} width="30" height="30" color="var(--color-accion)" strokeWidth={2.25} aria-hidden="true" />
+      <Icono x={x - i} y={y - i} width={m} height={m} color="var(--color-accion)" strokeWidth={2.25} aria-hidden="true" />
     </g>
   )
 }

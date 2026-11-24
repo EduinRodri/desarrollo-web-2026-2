@@ -88,9 +88,14 @@ export default function Inicio() {
             <button className="boton">Buscar</button>
           </form>
         </div>
-        {/* Decorativa (aria-hidden). En computador va aquí, al lado del texto.
-            En el celular se reubica en «Así de fácil», grande, donde cuenta la ruta barrio → maestro → sol */}
-        <IlustracionHeroe className="heroe-ilustracion" />
+        {/* El producto real como héroe (captura de producción en un teléfono), igual en todos los tamaños:
+            asoma desde el borde inferior de la tarjeta. srcset: el celular descarga 21 KB, el computador 43 KB.
+            width/height reservan el espacio (CLS 0). Recurso propio: lo permite la CSP. */}
+        <div className="heroe-producto">
+          <img src="/heroe-telefono-560.webp" srcSet="/heroe-telefono-320.webp 320w, /heroe-telefono-560.webp 560w"
+            sizes="(min-width: 900px) 300px, 240px" width="560" height="1155" decoding="async" fetchPriority="high"
+            alt="Camellapp en el celular: un servicio con su calificación, el maestro y el precio de referencia" />
+        </div>
       </section>
 
       <section className="bloque" aria-labelledby="t-oficios">
@@ -116,6 +121,7 @@ export default function Inicio() {
         <div className="como-fijo">
           <h2 id="t-como">Así de fácil</h2>
           <p className="suave">Tres pasos, sin pagar nada en la app. Tú decides con quién trabajar.</p>
+          {/* La escena del pin cuenta los pasos: barrio → maestro (la ruta en C) → sol (terminado) */}
           <IlustracionHeroe className="como-ilustracion" />
         </div>
         <ol className="pasos-grandes">

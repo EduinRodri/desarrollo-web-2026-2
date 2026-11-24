@@ -87,6 +87,14 @@ for (const [nombre, ruta] of PANTALLAS) {
 }
 await navegador.close()
 
+// Imagen del héroe de la app: el teléfono con el detalle de un servicio, en WebP con transparencia.
+// Dos anchos para srcset (el celular descarga el pequeño). Se sirve desde /public: recurso propio (CSP).
+for (const ancho of [320, 560]) {
+  await sharp(telefonos[2]).resize(ancho).webp({ quality: 80, alphaQuality: 90 })
+    .toFile(fileURLToPath(new URL(`../public/heroe-telefono-${ancho}.webp`, import.meta.url)))
+}
+console.log('listo: public/heroe-telefono-320.webp y -560.webp')
+
 // 3) Composición de marca 2400×1350 (16:9): fondo arena y tres teléfonos.
 const FW = 2400, FH = 1350, ESCALA = 0.66
 const tw = Math.round((CW + 12) * ESCALA), th = Math.round(CH * ESCALA)
