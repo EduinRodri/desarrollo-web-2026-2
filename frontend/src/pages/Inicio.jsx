@@ -12,6 +12,7 @@ import { useCatalogo } from '../hooks/useCatalogo'
 import { puntaje } from '../reputacion'
 import { Avatar, Calificacion, Nivel } from '../components/Ui'
 import { PuntoSol } from '../components/Marca'
+import { IlustracionHeroe } from '../components/Ilustraciones'
 import { ICONOS_GRUPO } from '../components/oficios'
 
 const PREGUNTAS = [
@@ -75,16 +76,20 @@ export default function Inicio() {
   return (
     <>
       <section className="heroe">
-        <p className="sobretitulo">Malambo y área metropolitana de Barranquilla</p>
-        <h1>Camello bien hecho, cerca de ti<PuntoSol /></h1>
-        <p className="heroe-texto">Encuentra plomeros, electricistas, mecánicos y más de tu zona, con reseñas de vecinos que ya los contrataron.</p>
-        <form className="heroe-busqueda" role="search" onSubmit={buscar}>
-          <label htmlFor="q-inicio" className="solo-lector">¿Qué necesitas arreglar?</label>
-          <Search aria-hidden="true" />
-          <input id="q-inicio" type="search" enterKeyHint="search" placeholder="Fuga, pintura, aire…" value={texto}
-            onChange={(e) => setTexto(e.target.value)} autoComplete="off" />
-          <button className="boton">Buscar</button>
-        </form>
+        <div className="heroe-col">
+          <p className="sobretitulo">Malambo y área metropolitana de Barranquilla</p>
+          <h1>Camello bien hecho, cerca de ti<PuntoSol /></h1>
+          <p className="heroe-texto">Encuentra plomeros, electricistas, mecánicos y más de tu zona, con reseñas de vecinos que ya los contrataron.</p>
+          <form className="heroe-busqueda" role="search" onSubmit={buscar}>
+            <label htmlFor="q-inicio" className="solo-lector">¿Qué necesitas arreglar?</label>
+            <Search aria-hidden="true" />
+            <input id="q-inicio" type="search" enterKeyHint="search" placeholder="Fuga, pintura, aire…" value={texto}
+              onChange={(e) => setTexto(e.target.value)} autoComplete="off" />
+            <button className="boton">Buscar</button>
+          </form>
+        </div>
+        {/* Decorativa: aria-hidden. Va después del formulario para que en el celular la búsqueda siga arriba */}
+        <IlustracionHeroe className="heroe-ilustracion" />
       </section>
 
       <section className="bloque" aria-labelledby="t-oficios">
