@@ -121,8 +121,6 @@ export default function Inicio() {
         <div className="como-fijo">
           <h2 id="t-como">Así de fácil</h2>
           <p className="suave">Tres pasos, sin pagar nada en la app. Tú decides con quién trabajar.</p>
-          {/* La escena del pin cuenta los pasos: barrio → maestro (la ruta en C) → sol (terminado) */}
-          <IlustracionHeroe className="como-ilustracion" />
         </div>
         <ol className="pasos-grandes">
           <li><span>1</span><strong>Busca</strong><p>Elige el oficio y tu municipio. Compara precios de referencia y reseñas.</p></li>
@@ -142,14 +140,19 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* La escena del pin cuenta esta oferta al pie de la letra: el pin con el barrio = «pedidos de tu zona»,
+          los oficios sobre la ruta = «tus servicios», la C que termina en el sol = «una reputación».
+          Va en la versión invertida del manual (blanco sobre terracota). Su sol es el punto sol de la banda,
+          por eso el titular de aquí no lleva otro (uno por composición). */}
       <section className="banda-trabajador" aria-labelledby="t-trabajador">
-        <div>
-          <h2 id="t-trabajador">¿Vives de tu oficio? Que tu camello hable por ti<PuntoSol /></h2>
+        <IlustracionHeroe className="banda-ilustracion" />
+        <div className="banda-texto">
+          <h2 id="t-trabajador">¿Vives de tu oficio? Que tu camello hable por ti.</h2>
           <p>Publica tus servicios gratis, recibe pedidos de tu zona y construye una reputación que te abre puertas.</p>
+          <Link to={usuario ? '/mi-perfil' : '/registro'} className="boton boton-claro">
+            <UserCheck aria-hidden="true" /> {usuario?.es_trabajador ? 'Ir a mi perfil' : 'Ofrecer mis servicios'}
+          </Link>
         </div>
-        <Link to={usuario ? '/mi-perfil' : '/registro'} className="boton boton-claro">
-          <UserCheck aria-hidden="true" /> {usuario?.es_trabajador ? 'Ir a mi perfil' : 'Ofrecer mis servicios'}
-        </Link>
       </section>
 
       <section className="bloque" aria-labelledby="t-faq">
