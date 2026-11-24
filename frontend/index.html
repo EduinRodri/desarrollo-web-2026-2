@@ -11,6 +11,10 @@
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- La foto del teléfono es el LCP del inicio: se pide en paralelo con el JS en vez de esperar a React.
+         Mismos srcset/sizes que el <img> (si no coinciden, se descargaría dos veces). -->
+    <link rel="preload" as="image" fetchpriority="high" href="/heroe-telefono-560.webp"
+      imagesrcset="/heroe-telefono-320.webp 320w, /heroe-telefono-560.webp 560w" imagesizes="(min-width: 900px) 300px, 240px" />
     <!-- Vista previa al compartir el enlace (WhatsApp, Facebook) -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />
