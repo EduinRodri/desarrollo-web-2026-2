@@ -1,6 +1,6 @@
 import { startTransition, useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router'
-import { BarChart3, ClipboardList, LogIn, LogOut, Menu, Search, UserRound, X } from 'lucide-react'
+import { BarChart3, CircleUserRound, ClipboardList, LogOut, Menu, Search, UserRound, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { Logo } from './Marca'
 
@@ -43,7 +43,7 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <NavLink to="/ingresar"><LogIn aria-hidden="true" size={18} /> Ingresar</NavLink>
+              <NavLink to="/ingresar"><CircleUserRound aria-hidden="true" size={18} /> Ingresar</NavLink>
               <Link to="/registro" className="boton boton-sm">Crear cuenta</Link>
             </>
           )}

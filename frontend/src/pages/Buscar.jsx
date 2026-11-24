@@ -92,7 +92,7 @@ export default function Buscar() {
           const Icono = ICONOS_GRUPO[g] ?? LayoutGrid
           return (
             <button key={g} type="button" className="chip" aria-pressed={grupo === g}
-              onClick={() => cambiarFiltro('grupo', grupo === g ? '' : g)} title={g}>
+              onClick={(e) => { cambiarFiltro('grupo', grupo === g ? '' : g); e.currentTarget.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }) }} title={g}>
               <Icono aria-hidden="true" /> {NOMBRE_CORTO[g] ?? g}
             </button>
           )

@@ -399,3 +399,9 @@ dialog p { color: var(--color-texto-suave); margin-top: var(--esp-2); }
 .persona-datos a:hover { color: var(--color-accion-texto); }
 .pestanas button { white-space: nowrap; }
 .pedido .linea-tiempo { max-width: 520px; }
+
+/* Chips: al desplazarse no quedan pegados al borde, y el desvanecido avisa que la fila se puede deslizar */
+.chips { scroll-padding-inline: var(--esp-4);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--esp-4), #000 calc(100% - var(--esp-6)), transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 var(--esp-4), #000 calc(100% - var(--esp-6)), transparent 100%); }
+.cargando-pagina { display: grid; gap: var(--esp-4); padding-top: var(--esp-6); }
