@@ -1,4 +1,6 @@
 """Contraseñas con hash (bcrypt) e inicio de sesión con token JWT."""
+import hashlib
+import hmac
 import os
 from datetime import datetime, timedelta, timezone
 
@@ -11,11 +13,27 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .models import Usuario
 
-CLAVE_SECRETA = os.getenv("JWT_SECRET", "solo-para-desarrollo-cambiar-en-produccion")
-# En producción (Vercel define la variable VERCEL) la clave de desarrollo es pública en el repositorio:
-# sería como dejar la llave pegada en la puerta. Si falta JWT_SECRET, la API no arranca.
-if os.getenv("VERCEL") and "JWT_SECRET" not in os.environ:
-    raise RuntimeError("Falta la variable de entorno JWT_SECRET en producción.")
+def _clave_secreta() -> str:
+    """Clave para firmar los tokens de sesión.
+
+    1) Si existe JWT_SECRET, se usa esa.
+    2) Si no, en producción se DERIVA de la cadena de conexión de la base (que ya es secreta y la
+       guarda Vercel): nadie tiene que generar ni copiar una clave a mano.
+    3) Nunca se usa la clave de desarrollo en producción: es pública en el repositorio.
+    """
+    if os.getenv("JWT_SECRET"):
+        if len(os.environ["JWT_SECRET"]) < 32:  # RFC 7518: HS256 pide claves de al menos 32 bytes
+            raise RuntimeError("JWT_SECRET debe tener al menos 32 caracteres.")
+        return os.environ["JWT_SECRET"]
+    url = os.getenv("DATABASE_URL", "")
+    if url and not url.startswith("sqlite"):
+        return hmac.new(url.encode(), b"camellapp-jwt-v1", hashlib.sha256).hexdigest()
+    if os.getenv("VERCEL"):
+        raise RuntimeError("En producción hace falta DATABASE_URL o JWT_SECRET.")
+    return "solo-para-desarrollo-local-nunca-en-produccion"
+
+
+CLAVE_SECRETA = _clave_secreta()
 ALGORITMO = "HS256"
 HORAS_DE_SESION = 8
 
