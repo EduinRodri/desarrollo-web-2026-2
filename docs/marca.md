@@ -78,8 +78,15 @@ El movimiento explica, no decora. Con «reducir movimiento» activado en el tel�
 ## 9. Activos y archivos
 `frontend/marca/` (SVG fuente) → `node scripts/generar-assets.mjs` genera favicon, íconos de app (192, 512, maskable), `apple-touch-icon` e imagen para compartir 1200×630.
 
-**Ilustración de portada** (`components/Ilustraciones.jsx`, `IlustracionHeroe`, 23 nov): se arma con los tres activos distintivos, no con clipart.
-El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. SVG en línea con tokens (claro/oscuro), `aria-hidden`.
+**Un lenguaje para cada cosa** (23 nov): el **producto real** (capturas en un teléfono) muestra qué hace la app; las **escenas del pin** son para
+momentos de marca, vacíos y errores. No se mezclan en la misma sección.
+
+**Héroe del inicio:** tarjeta de marca (terracota suave) con el titular y la búsqueda; el teléfono con una captura real del detalle de un servicio
+asoma desde el borde inferior. El mismo diseño en todo tamaño. `public/heroe-telefono-{320,560}.webp` (21/43 KB, `srcset`, precargada).
+
+**Escena del pin** (`components/Ilustraciones.jsx`, `IlustracionHeroe`): se arma con los tres activos distintivos, no con clipart.
+El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. Vive en la **banda para trabajadores** porque cuenta su oferta al pie de la letra (zona → servicios → reputación), en la **versión invertida** (tokens cambiados solo dentro de la banda: blanco sobre terracota). Su sol es el de la banda: el titular de ahí no lleva otro. SVG en línea, `aria-hidden`.
+**Descartados el 23 nov:** una casa genérica (sin identidad) y un panorama horizontal de la calle (pesado y plano). Lección: primero un sistema de ilustración (retícula, trazo, escalas), después los dibujos.
 
 **Mockups en teléfono** (`docs/mockups/`): capturas **reales de producción** (nunca inventadas) en un marco de celular dibujado en SVG.
 Se regeneran con `node scripts/generar-mockups.mjs` (puppeteer-core con el Edge instalado, tema claro, 390 pt a 2×). Composición 16:9 en `camellapp-mockups.png` (y `.webp` de 1200 px para el README). Un solo punto sol: el de la pantalla. Fuera de la app: pesan demasiado para datos móviles.
