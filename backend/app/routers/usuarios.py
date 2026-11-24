@@ -19,7 +19,7 @@ from ..schemas import (
     UsuarioCrear,
     UsuarioPrivado,
 )
-from ..seguridad import crear_token, es_id_admin, hashear, usuario_actual, verificar
+from ..seguridad import crear_token, es_admin, hashear, usuario_actual, verificar
 from .servicios import con_reputacion
 
 router = APIRouter(tags=["Usuarios y sesión"])
@@ -73,8 +73,8 @@ def iniciar_sesion(
         limites.anotar_fallo(db, correo, ip)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Correo o contraseña incorrectos.")
     limites.limpiar_correo(db, correo)
-    if es_id_admin(usuario.id) and not usuario.es_admin:  # se agregó a ADMIN_IDS después de registrarse
-        usuario.es_admin = True
+    if usuario.es_admin != es_admin(usuario):  # la marca guardada sigue a ADMIN_IDS (da y quita)
+        usuario.es_admin = es_admin(usuario)
         db.commit()
     return Token(access_token=crear_token(usuario.id), usuario=usuario)
 

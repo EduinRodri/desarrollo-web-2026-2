@@ -431,3 +431,13 @@ def test_cors_rechaza_otros_sitios(cliente):
     r = cliente.options("/sesion", headers={"Origin": "https://sitio-malo.example",
                                              "Access-Control-Request-Method": "POST"})
     assert r.headers.get("access-control-allow-origin") != "https://sitio-malo.example"
+
+
+def test_en_produccion_quitar_de_admin_ids_quita_el_permiso(cliente, monkeypatch):
+    monkeypatch.setenv("VERCEL", "1")
+    h = registrar(cliente, "jefe@test.co", "Jefa Equipo")
+    with cliente.Sesion() as db:  # aunque la base diga admin, en producción manda ADMIN_IDS
+        db.query(Usuario).update({"es_admin": True})
+        db.commit()
+    monkeypatch.setattr(seguridad, "ADMIN_IDS", set())
+    assert cliente.get("/reportes", headers=h).status_code == 403

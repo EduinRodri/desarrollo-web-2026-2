@@ -115,7 +115,15 @@ def es_id_admin(usuario_id: int) -> bool:
     return usuario_id in ADMIN_IDS
 
 
+def es_admin(usuario: Usuario) -> bool:
+    """En producción manda SOLO la lista ADMIN_IDS: quitar un número de la lista le quita el
+    permiso al instante. En local vale la marca de la base (el admin de la demo local)."""
+    if os.getenv("VERCEL"):
+        return es_id_admin(usuario.id)
+    return usuario.es_admin or es_id_admin(usuario.id)
+
+
 def solo_admin(usuario: Usuario = Depends(usuario_actual)) -> Usuario:
-    if not usuario.es_admin:
+    if not es_admin(usuario):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Solo el equipo de Camellapp ve los reportes.")
     return usuario
