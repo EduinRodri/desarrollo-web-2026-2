@@ -77,3 +77,9 @@ El movimiento explica, no decora. Con «reducir movimiento» activado en el tel�
 
 ## 9. Activos y archivos
 `frontend/marca/` (SVG fuente) → `node scripts/generar-assets.mjs` genera favicon, íconos de app (192, 512, maskable), `apple-touch-icon` e imagen para compartir 1200×630.
+
+**Ilustración de portada** (`components/Ilustraciones.jsx`, `IlustracionHeroe`, 23 nov): se arma con los tres activos distintivos, no con clipart.
+El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. SVG en línea con tokens (claro/oscuro), `aria-hidden`.
+
+**Mockups en teléfono** (`docs/mockups/`): capturas **reales de producción** (nunca inventadas) en un marco de celular dibujado en SVG.
+Se regeneran con `node scripts/generar-mockups.mjs` (puppeteer-core con el Edge instalado, tema claro, 390 pt a 2×). Composición 16:9 en `camellapp-mockups.png` (y `.webp` de 1200 px para el README). Un solo punto sol: el de la pantalla. Fuera de la app: pesan demasiado para datos móviles.
