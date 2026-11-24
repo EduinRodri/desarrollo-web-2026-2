@@ -76,7 +76,7 @@ async def cabeceras_de_seguridad(request: Request, call_next):
     h["X-Frame-Options"] = "DENY"  # nadie puede meter la API en un <iframe>
     h["Referrer-Policy"] = "no-referrer"
     h["Cross-Origin-Opener-Policy"] = "same-origin"
-    h["Cross-Origin-Resource-Policy"] = "same-site"
+    h["Cross-Origin-Resource-Policy"] = "same-origin"  # las llamadas del front son CORS: no les afecta
     if request.url.path in ("/docs", "/redoc"):
         # Swagger carga sus archivos desde un CDN: se le permite solo eso.
         h["Content-Security-Policy"] = (
