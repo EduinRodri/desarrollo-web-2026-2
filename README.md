@@ -3,7 +3,7 @@
 Aplicación web para encontrar, contratar y calificar trabajadores de oficios presenciales en Malambo y el
 área metropolitana de Barranquilla. Actividad 4 de la electiva (continuación de la propuesta de la Act. 2).
 
-**Equipo:** Eduin Rodríguez · Guillermo Andrés Carrillo Sánchez · Nicolás Jaiquel Rubio.
+**Equipo:** Eduin Rodríguez · Guillermo · Nicolás.
 
 | Parte | Tecnología | Carpeta |
 |---|---|---|
