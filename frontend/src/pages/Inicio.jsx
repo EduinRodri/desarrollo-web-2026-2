@@ -32,7 +32,8 @@ function Destacados() {
     if (!servicios) return null
     const vistos = new Set()
     return [...servicios].sort((a, b) => puntaje(b) - puntaje(a))
-      .filter((s) => s.reputacion?.resenas >= 3 && !vistos.has(s.trabajador.id) && vistos.add(s.trabajador.id))
+      // «Mejor calificados» solo si de verdad lo son: 3+ reseñas y promedio de 4 o más.
+      .filter((s) => s.reputacion?.resenas >= 3 && s.reputacion.promedio >= 4 && !vistos.has(s.trabajador.id) && vistos.add(s.trabajador.id))
       .slice(0, 3)
   }, [servicios])
 
