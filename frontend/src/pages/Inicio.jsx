@@ -63,7 +63,7 @@ function Destacados() {
 
 export default function Inicio() {
   const { usuario } = useAuth()
-  const { grupos, porGrupo } = useCatalogo()
+  const { porGrupo } = useCatalogo()
   const navegar = useNavigate()
   const [texto, setTexto] = useState('')
 
@@ -90,13 +90,14 @@ export default function Inicio() {
       <section className="bloque" aria-labelledby="t-oficios">
         <div className="bloque-cabeza"><h2 id="t-oficios">¿Qué tipo de camello necesitas?</h2></div>
         <div className="oficios">
-          {Object.keys(ICONOS_GRUPO).filter((g) => grupos.includes(g)).map((g) => {
+          {/* Los 6 grupos son fijos: se dibujan de una vez para que la página no salte (CLS) mientras llega la API */}
+          {Object.keys(ICONOS_GRUPO).map((g) => {
             const Icono = ICONOS_GRUPO[g]
             return (
               <Link key={g} to={`/buscar?grupo=${encodeURIComponent(g)}`} className="oficio">
                 <span className="oficio-icono"><Icono aria-hidden="true" /></span>
                 <strong>{g}</strong>
-                <span className="texto-xs suave">{porGrupo[g]?.length} oficios</span>
+                <span className="texto-xs suave">{porGrupo[g] ? `${porGrupo[g].length} oficios` : ' '}</span>
               </Link>
             )
           })}
