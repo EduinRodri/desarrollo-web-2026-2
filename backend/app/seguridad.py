@@ -98,6 +98,25 @@ def usuario_actual(token: str = Depends(oauth2), db: Session = Depends(get_db)) 
     return usuario
 
 
+DOMINIO_DEMO = "@demo.co"
+
+
+def es_cuenta_demo_en_produccion(correo: str) -> bool:
+    return bool(os.getenv("VERCEL")) and correo.lower().endswith(DOMINIO_DEMO)
+
+
+def sin_cuenta_demo(usuario: Usuario = Depends(usuario_actual)) -> Usuario:
+    """Las cuentas demo tienen la clave publicada: en producción pueden pedir, aceptar y calificar
+    (el recorrido de la app), pero no cambiar textos públicos. Así nadie usa trabajador1 para
+    publicar «Estafa: paga por adelantado» con la cara de Camellapp."""
+    if es_cuenta_demo_en_produccion(usuario.correo):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Las cuentas de demostración no pueden publicar ni editar textos. Crea tu propia cuenta para probarlo.",
+        )
+    return usuario
+
+
 def solo_trabajador(usuario: Usuario = Depends(usuario_actual)) -> Usuario:
     if not usuario.es_trabajador:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Primero activa tu perfil de trabajador.")

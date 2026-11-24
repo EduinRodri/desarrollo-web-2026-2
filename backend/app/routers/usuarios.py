@@ -19,7 +19,7 @@ from ..schemas import (
     UsuarioCrear,
     UsuarioPrivado,
 )
-from ..seguridad import crear_token, es_admin, hashear, usuario_actual, verificar
+from ..seguridad import crear_token, es_admin, es_cuenta_demo_en_produccion, hashear, sin_cuenta_demo, usuario_actual, verificar
 from .servicios import con_reputacion
 
 router = APIRouter(tags=["Usuarios y sesión"])
@@ -37,6 +37,8 @@ def registrarse(datos: UsuarioCrear, request: Request, db: Session = Depends(get
             "Debes autorizar el tratamiento de tus datos (Ley 1581 de 2012) para registrarte.",
         )
     correo = datos.correo.lower()
+    if es_cuenta_demo_en_produccion(correo):  # nadie crea cuentas que parezcan de la demo
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ese dominio de correo está reservado.")
     # Se cuenta también el intento con correo repetido: así no se pueden probar miles de correos
     # para averiguar cuáles están registrados (enumeración de cuentas).
     limites.anotar_registro(db, ip)
@@ -88,6 +90,7 @@ def mi_cuenta(usuario: Usuario = Depends(usuario_actual)):
 def activar_o_editar_perfil(
     datos: PerfilTrabajador,
     usuario: Usuario = Depends(usuario_actual),
+    _: Usuario = Depends(sin_cuenta_demo),
     db: Session = Depends(get_db),
 ):
     """Activa en la misma cuenta el perfil de trabajador, o lo edita (RF2)."""

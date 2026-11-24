@@ -441,3 +441,26 @@ def test_en_produccion_quitar_de_admin_ids_quita_el_permiso(cliente, monkeypatch
         db.commit()
     monkeypatch.setattr(seguridad, "ADMIN_IDS", set())
     assert cliente.get("/reportes", headers=h).status_code == 403
+
+
+def test_cuentas_demo_en_produccion_no_cambian_textos(cliente, monkeypatch):
+    """Decisión del 23 nov: la clave demo es pública, así que la demo no desfigura la vitrina."""
+    h, servicio = trabajador_con_servicio(cliente, "trabajador1@demo.co")
+    h_c = registrar(cliente, "cliente1@demo.co")
+    monkeypatch.setenv("VERCEL", "1")
+    assert cliente.patch(f"/servicios/{servicio}", headers=h, json={"titulo": "Estafa: paga ya"}).status_code == 403
+    assert cliente.post("/servicios", headers=h, json={
+        "categoria_id": 1, "titulo": "Servicio falso", "descripcion": "Texto de desfiguración",
+        "precio_desde": 1, "tiempo_estimado": "1 hora"}).status_code == 403
+    r = cliente.put("/usuarios/me/trabajador", headers=h, json={"descripcion": "Llama a este número falso", "zona": "Malambo"})
+    assert r.status_code == 403
+    # El recorrido sí funciona: pedir, aceptar, terminar y calificar.
+    p = cliente.post("/pedidos", headers=h_c, json={"servicio_id": servicio}).json()["id"]
+    assert cliente.patch(f"/pedidos/{p}", headers=h, json={"estado": "aceptado"}).status_code == 200
+    assert cliente.patch(f"/pedidos/{p}", headers=h, json={"estado": "terminado"}).status_code == 200
+    assert cliente.patch(f"/pedidos/{p}/resena", headers=h_c, json={"estrellas": 5, "comentario": "Muy bien"}).status_code == 200
+    # Y nadie registra cuentas nuevas con el dominio de la demo.
+    r = cliente.post("/usuarios", json={"nombre": "Falso Demo", "correo": "trabajador99@demo.co",
+                                         "telefono": "3001234567", "contrasena": "clave-segura-1",
+                                         "acepta_tratamiento_datos": True})
+    assert r.status_code == 400

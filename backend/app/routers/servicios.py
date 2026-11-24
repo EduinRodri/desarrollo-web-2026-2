@@ -8,7 +8,7 @@ from ..datos_iniciales import ZONAS
 from ..models import Categoria, Servicio, Usuario
 from ..reputacion import reputaciones
 from ..schemas import IdRuta, CategoriaSalida, ServicioCrear, ServicioEditar, ServicioSalida
-from ..seguridad import solo_trabajador
+from ..seguridad import sin_cuenta_demo, solo_trabajador
 
 router = APIRouter(tags=["Servicios"])
 
@@ -91,6 +91,7 @@ def ver_servicio(servicio_id: IdRuta, db: Session = Depends(get_db)):
 def publicar_servicio(
     datos: ServicioCrear,
     usuario: Usuario = Depends(solo_trabajador),
+    _: Usuario = Depends(sin_cuenta_demo),
     db: Session = Depends(get_db),
 ):
     """Publica un servicio con precio de referencia y tiempo estimado (RF3)."""
@@ -108,6 +109,7 @@ def editar_servicio(
     servicio_id: IdRuta,
     datos: ServicioEditar,
     usuario: Usuario = Depends(solo_trabajador),
+    _: Usuario = Depends(sin_cuenta_demo),
     db: Session = Depends(get_db),
 ):
     servicio = db.get(Servicio, servicio_id)
