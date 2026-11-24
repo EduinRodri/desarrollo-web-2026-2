@@ -3,6 +3,8 @@
 Aplicación web para encontrar, contratar y calificar trabajadores de oficios presenciales en Malambo y el
 área metropolitana de Barranquilla. Actividad 4 de la electiva (continuación de la propuesta de la Act. 2).
 
+![Camellapp en el celular: inicio, búsqueda y detalle de un servicio (capturas reales de producción)](docs/mockups/camellapp-mockups.webp)
+
 **Equipo:** Eduin Rodríguez · Guillermo · Nicolás.
 
 | Parte | Tecnología | Carpeta |
