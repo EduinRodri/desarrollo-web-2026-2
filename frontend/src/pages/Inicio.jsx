@@ -88,7 +88,8 @@ export default function Inicio() {
             <button className="boton">Buscar</button>
           </form>
         </div>
-        {/* Decorativa: aria-hidden. Va después del formulario para que en el celular la búsqueda siga arriba */}
+        {/* Decorativa (aria-hidden). En computador va aquí, al lado del texto.
+            En el celular se reubica en «Así de fácil», grande, donde cuenta la ruta barrio → maestro → sol */}
         <IlustracionHeroe className="heroe-ilustracion" />
       </section>
 
@@ -115,6 +116,7 @@ export default function Inicio() {
         <div className="como-fijo">
           <h2 id="t-como">Así de fácil</h2>
           <p className="suave">Tres pasos, sin pagar nada en la app. Tú decides con quién trabajar.</p>
+          <IlustracionHeroe className="como-ilustracion" />
         </div>
         <ol className="pasos-grandes">
           <li><span>1</span><strong>Busca</strong><p>Elige el oficio y tu municipio. Compara precios de referencia y reseñas.</p></li>

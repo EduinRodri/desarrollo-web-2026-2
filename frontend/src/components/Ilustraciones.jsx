@@ -1,5 +1,6 @@
 // Ilustraciones propias para los estados vacíos (SVG, sin licencias de terceros).
 // Usan los tokens de color, así que cambian solas en modo oscuro.
+import { useId } from 'react'
 import { PaintRoller, Wrench, Zap } from 'lucide-react'
 const base = { fill: 'var(--color-accion-suave)' }
 const linea = { fill: 'none', stroke: 'var(--color-accion)', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }
@@ -66,10 +67,13 @@ function Oficio({ x, y, Icono }) {
 }
 
 export function IlustracionHeroe({ className }) {
+  // useId: la ilustración puede aparecer dos veces en la página (héroe y «Así de fácil»),
+  // y cada recorte necesita un id único o el segundo usaría el del primero.
+  const recorte = useId()
   return (
     <svg viewBox="0 0 460 420" className={className} aria-hidden="true" focusable="false">
       <defs>
-        <clipPath id="ilus-heroe-pin"><path d={PIN} transform="translate(93 56) scale(4.6)" /></clipPath>
+        <clipPath id={recorte}><path d={PIN} transform="translate(93 56) scale(4.6)" /></clipPath>
       </defs>
 
       {/* La C del logo como ruta: abre a la derecha y cierra arriba en el punto sol */}
@@ -77,7 +81,7 @@ export function IlustracionHeroe({ className }) {
         strokeLinecap="round" strokeDasharray="0.1 13" />
 
       {/* Ventana al barrio con forma de pin */}
-      <g clipPath="url(#ilus-heroe-pin)">
+      <g clipPath={`url(#${recorte})`}>
         <rect x="80" y="50" width="300" height="300" fill="var(--color-accion-suave)" />
         {/* Palma */}
         {/* Árbol de patio (mango o almendro): la sombra de la terraza en Malambo. No es palma: Malambo no tiene playa */}

@@ -8,12 +8,17 @@
 /* ---------- Héroe ---------- */
 .heroe { padding: var(--esp-8) 0 var(--esp-6); display: grid; gap: var(--esp-6); align-items: center; }
 .heroe-col { max-width: 760px; min-width: 0; }
-/* La ilustración reserva su espacio con aspect-ratio: no mueve nada al pintarse (CLS 0).
-   En el celular va pequeña y debajo de la búsqueda, para que buscar siga en la primera pantalla. */
-.heroe-ilustracion { display: block; width: 100%; max-width: 240px; aspect-ratio: 460 / 420; height: auto; justify-self: center; }
+/* Ilustración de portada: reserva su espacio con aspect-ratio (CLS 0).
+   Responsiva por UBICACIÓN, no por tamaño: en computador va en el héroe, al lado del texto;
+   en celular y tableta se reubica grande en «Así de fácil», donde cuenta la ruta barrio → maestro → sol
+   y no empuja la búsqueda ni los oficios fuera de la primera pantalla. Un solo punto sol por pantalla. */
+.heroe-ilustracion, .como-ilustracion { width: 100%; aspect-ratio: 460 / 420; height: auto; }
+.heroe-ilustracion { display: none; }
+.como-ilustracion { display: block; max-width: 360px; margin: var(--esp-6) auto 0; }
 @media (min-width: 900px) {
   .heroe { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--esp-8); }
-  .heroe-ilustracion { max-width: 440px; justify-self: end; }
+  .heroe-ilustracion { display: block; max-width: 440px; justify-self: end; }
+  .como-ilustracion { display: none; }
 }
 .heroe h1 { font-size: clamp(2rem, 7vw, 3.25rem); line-height: 1.08; letter-spacing: -0.025em; margin: var(--esp-3) 0; text-wrap: balance; }
 .heroe-texto { font-size: var(--texto-lg); line-height: var(--linea-lg); color: var(--color-texto-suave); max-width: 46ch; }
