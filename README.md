@@ -36,7 +36,7 @@ pnpm dev        # http://localhost:5173
 Contraseña de todas las cuentas: `demo12345` (cliente: `cliente1@demo.co`, trabajador: `trabajador1@demo.co`,
 equipo/reportes: `admin@camellapp.co`; en producción su clave es otra y no es pública).
 
-Variables de entorno (producción): `DATABASE_URL` (la pone la integración de Neon), `JWT_SECRET` (secreta), `FRONTEND_ORIGINS` (dirección del front), `ADMIN_CORREOS` (correos del equipo, separados por coma) y `DEMO_AUTOCARGA=1` (carga la demo al arrancar, sin administrador).
+Variables de entorno (producción): `DATABASE_URL` (la pone la integración de Neon), `JWT_SECRET` (secreta), `FRONTEND_ORIGINS` (dirección del front), `ADMIN_IDS` (números de cuenta del equipo, separados por coma; se ven en `GET /usuarios/me`) y `DEMO_AUTOCARGA=1` (carga la demo al arrancar, sin administrador).
 
 ## Requisitos de la propuesta cubiertos por la API
 | RF | Qué hace | Endpoint |

@@ -7,7 +7,7 @@ from ..database import get_db
 from ..datos_iniciales import ZONAS
 from ..models import Categoria, Servicio, Usuario
 from ..reputacion import reputaciones
-from ..schemas import CategoriaSalida, ServicioCrear, ServicioEditar, ServicioSalida
+from ..schemas import IdRuta, CategoriaSalida, ServicioCrear, ServicioEditar, ServicioSalida
 from ..seguridad import solo_trabajador
 
 router = APIRouter(tags=["Servicios"])
@@ -36,12 +36,12 @@ def listar_zonas():
 
 @router.get("/servicios", response_model=list[ServicioSalida])
 def buscar_servicios(
-    categoria_id: int | None = None,
+    categoria_id: int | None = Query(default=None, ge=1, le=2_147_483_647),
     grupo: str | None = Query(default=None, max_length=60, description="Grupo de oficios, p. ej. «Vehículos»"),
     zona: str | None = None,
     q: str | None = Query(default=None, max_length=60, description="Texto en el título"),
     limite: int = Query(default=20, ge=1, le=50),
-    desde: int = Query(default=0, ge=0),
+    desde: int = Query(default=0, ge=0, le=10_000),
     db: Session = Depends(get_db),
 ):
     """Busca servicios activos por oficio, zona y texto, con paginación (RF4)."""
@@ -73,14 +73,16 @@ def mis_servicios(usuario: Usuario = Depends(solo_trabajador), db: Session = Dep
         .options(selectinload(Servicio.categoria), selectinload(Servicio.trabajador))
         .where(Servicio.trabajador_id == usuario.id)
         .order_by(Servicio.id.desc())
+        .limit(100)  # tope: nadie necesita ver más de 100 servicios propios de una vez
     ).all()
     return con_reputacion(db, servicios)
 
 
 @router.get("/servicios/{servicio_id}", response_model=ServicioSalida)
-def ver_servicio(servicio_id: int, db: Session = Depends(get_db)):
+def ver_servicio(servicio_id: IdRuta, db: Session = Depends(get_db)):
     servicio = db.get(Servicio, servicio_id)
-    if servicio is None:
+    # Un servicio pausado no se muestra al público (su dueño lo ve en /servicios/mios).
+    if servicio is None or not servicio.activo:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No existe ese servicio.")
     return con_reputacion(db, [servicio])[0]
 
@@ -103,7 +105,7 @@ def publicar_servicio(
 
 @router.patch("/servicios/{servicio_id}", response_model=ServicioSalida)
 def editar_servicio(
-    servicio_id: int,
+    servicio_id: IdRuta,
     datos: ServicioEditar,
     usuario: Usuario = Depends(solo_trabajador),
     db: Session = Depends(get_db),

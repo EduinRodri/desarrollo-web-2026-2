@@ -39,7 +39,14 @@ export function mensajeDeError(error) {
   if (typeof detalle === 'string') return detalle
   // 422: FastAPI manda una lista con cada campo que falló.
   if (Array.isArray(detalle)) {
-    return detalle.map((d) => `${d.loc?.at(-1) ?? 'dato'}: ${traducir(d.msg)}`).join(' · ')
+    return detalle
+      .map((d) =>
+        // Las reglas propias del backend (contraseña común, nombre con «Camellapp») ya vienen en español.
+        d.msg?.startsWith('Value error, ')
+          ? d.msg.slice('Value error, '.length)
+          : `${d.loc?.at(-1) ?? 'dato'}: ${traducir(d.msg)}`,
+      )
+      .join(' · ')
   }
   return 'Ocurrió un error inesperado.'
 }

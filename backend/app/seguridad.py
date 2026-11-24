@@ -36,22 +36,42 @@ def _clave_secreta() -> str:
 CLAVE_SECRETA = _clave_secreta()
 ALGORITMO = "HS256"
 HORAS_DE_SESION = 8
+EMISOR = "camellapp-api"  # iss: quién firmó el token
+AUDIENCIA = "camellapp-web"  # aud: para quién es; un token firmado para otro uso no sirve aquí
 
 # Le dice a Swagger dónde se pide el token (botón "Authorize").
 oauth2 = OAuth2PasswordBearer(tokenUrl="/sesion")
+
+MAX_BYTES_CONTRASENA = 72  # bcrypt solo mira los primeros 72 bytes; bcrypt 5 falla si hay más
 
 
 def hashear(contrasena: str) -> str:
     return bcrypt.hashpw(contrasena.encode(), bcrypt.gensalt()).decode()
 
 
-def verificar(contrasena: str, hash_guardado: str) -> bool:
-    return bcrypt.checkpw(contrasena.encode(), hash_guardado.encode())
+# Hash de relleno: si el correo no existe se compara igual contra este, para que la respuesta
+# tarde lo mismo y el tiempo no delate qué correos están registrados (enumeración de cuentas).
+_HASH_DE_RELLENO = hashear("relleno-para-igualar-tiempos")
+
+
+def verificar(contrasena: str, hash_guardado: str | None) -> bool:
+    datos = contrasena.encode()
+    if len(datos) > MAX_BYTES_CONTRASENA:
+        datos = b""  # nunca coincide, pero se hace el cálculo completo igual
+    resultado = bcrypt.checkpw(datos, (hash_guardado or _HASH_DE_RELLENO).encode())
+    return resultado and hash_guardado is not None and len(contrasena.encode()) <= MAX_BYTES_CONTRASENA
 
 
 def crear_token(usuario_id: int) -> str:
-    vence = datetime.now(timezone.utc) + timedelta(hours=HORAS_DE_SESION)
-    return jwt.encode({"sub": str(usuario_id), "exp": vence}, CLAVE_SECRETA, algorithm=ALGORITMO)
+    ahora = datetime.now(timezone.utc)
+    datos = {
+        "sub": str(usuario_id),
+        "iat": ahora,
+        "exp": ahora + timedelta(hours=HORAS_DE_SESION),
+        "iss": EMISOR,
+        "aud": AUDIENCIA,
+    }
+    return jwt.encode(datos, CLAVE_SECRETA, algorithm=ALGORITMO)
 
 
 def usuario_actual(token: str = Depends(oauth2), db: Session = Depends(get_db)) -> Usuario:
@@ -62,7 +82,14 @@ def usuario_actual(token: str = Depends(oauth2), db: Session = Depends(get_db)) 
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        datos = jwt.decode(token, CLAVE_SECRETA, algorithms=[ALGORITMO])
+        datos = jwt.decode(
+            token,
+            CLAVE_SECRETA,
+            algorithms=[ALGORITMO],  # lista fija: rechaza "none" y cambios de algoritmo
+            issuer=EMISOR,
+            audience=AUDIENCIA,
+            options={"require": ["exp", "iat", "sub", "iss", "aud"]},
+        )
         usuario = db.get(Usuario, int(datos["sub"]))
     except (jwt.PyJWTError, KeyError, ValueError):
         raise error
@@ -77,13 +104,15 @@ def solo_trabajador(usuario: Usuario = Depends(usuario_actual)) -> Usuario:
     return usuario
 
 
-# El equipo del emprendimiento se define por correo (variable ADMIN_CORREOS, separados por coma).
-# Así no hay una cuenta de administrador con contraseña compartida o publicada.
-ADMIN_CORREOS = {c.strip().lower() for c in os.getenv("ADMIN_CORREOS", "").split(",") if c.strip()}
+# El equipo del emprendimiento se define por NÚMERO de cuenta (variable ADMIN_IDS, separados por coma).
+# Antes era por correo, pero la app no verifica que el correo sea de quien lo registra: cualquiera
+# podía registrar ese correo primero y quedar como administrador. Un número de cuenta solo se
+# conoce después de crearla uno mismo (se ve en GET /usuarios/me).
+ADMIN_IDS = {int(i) for i in os.getenv("ADMIN_IDS", "").split(",") if i.strip().isdigit()}
 
 
-def es_correo_admin(correo: str) -> bool:
-    return correo.lower() in ADMIN_CORREOS
+def es_id_admin(usuario_id: int) -> bool:
+    return usuario_id in ADMIN_IDS
 
 
 def solo_admin(usuario: Usuario = Depends(usuario_actual)) -> Usuario:

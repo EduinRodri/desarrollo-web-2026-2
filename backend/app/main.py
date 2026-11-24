@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import DataError, IntegrityError, OperationalError
 
 from .database import Base, SessionLocal, engine
 from .datos_iniciales import OFICIOS
@@ -61,9 +61,35 @@ origenes = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in origenes if o.strip()],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    # Solo lo que el front usa de verdad (mínimo privilegio): nada de DELETE ni cabeceras raras.
+    allow_methods=["GET", "POST", "PUT", "PATCH"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+
+
+@app.middleware("http")
+async def cabeceras_de_seguridad(request: Request, call_next):
+    """Cabeceras que le dicen al navegador cómo tratar las respuestas de la API (OWASP A02)."""
+    respuesta = await call_next(request)
+    h = respuesta.headers
+    h["X-Content-Type-Options"] = "nosniff"  # el navegador no "adivina" el tipo: JSON es JSON
+    h["X-Frame-Options"] = "DENY"  # nadie puede meter la API en un <iframe>
+    h["Referrer-Policy"] = "no-referrer"
+    h["Cross-Origin-Opener-Policy"] = "same-origin"
+    h["Cross-Origin-Resource-Policy"] = "same-site"
+    if request.url.path in ("/docs", "/redoc"):
+        # Swagger carga sus archivos desde un CDN: se le permite solo eso.
+        h["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://fastapi.tiangolo.com; "
+            "frame-ancestors 'none'"
+        )
+    else:
+        h["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
+    # Lo que lleva datos de una cuenta no se guarda en cachés intermedias ni en el navegador.
+    if "authorization" in request.headers or request.url.path == "/sesion":
+        h["Cache-Control"] = "no-store"
+    return respuesta
 
 
 # --- Gestión de errores: toda falla responde con JSON y un mensaje entendible ---
@@ -74,6 +100,13 @@ async def error_de_integridad(_: Request, exc: IntegrityError):
         status_code=status.HTTP_409_CONFLICT,
         content={"detail": "Los datos chocan con un registro existente o violan una regla de la base de datos."},
     )
+
+
+@app.exception_handler(DataError)
+async def dato_fuera_de_rango(_: Request, exc: DataError):
+    # p. ej. /pedidos/99999999999999999999: la base no lo acepta como número; no es un error 500.
+    log.warning("Dato fuera de rango: %s", exc.orig)
+    return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": "Algún dato está fuera de rango."})
 
 
 @app.exception_handler(OperationalError)

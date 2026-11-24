@@ -5,10 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from .. import limites
 from ..database import get_db
 from ..models import EstadoPedido, Pedido, Servicio, Usuario
 from ..reputacion import reputaciones
-from ..schemas import CambioEstado, PedidoCrear, PedidoSalida, Resena, ServicioSalida
+from ..schemas import IdRuta, CambioEstado, PedidoCrear, PedidoSalida, Resena, ServicioSalida
 from ..seguridad import usuario_actual
 
 router = APIRouter(prefix="/pedidos", tags=["Pedidos y reseñas"])
@@ -34,7 +35,7 @@ def _salida(db: Session, pedidos: list[Pedido]) -> list[PedidoSalida]:
     return salida
 
 
-def _cargar(db: Session, pedido_id: int) -> Pedido:
+def _cargar(db: Session, pedido_id: IdRuta) -> Pedido:
     pedido = db.get(Pedido, pedido_id)
     if pedido is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No existe ese pedido.")
@@ -49,6 +50,16 @@ def pedir_servicio(datos: PedidoCrear, usuario: Usuario = Depends(usuario_actual
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Ese servicio no existe o no está disponible.")
     if servicio.trabajador_id == usuario.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "No puedes pedir tu propio servicio.")
+    # Un solo pedido abierto por servicio y cliente: evita llenar la bandeja del trabajador (API6).
+    abierto = db.scalar(select(Pedido.id).where(
+        Pedido.servicio_id == servicio.id,
+        Pedido.cliente_id == usuario.id,
+        Pedido.estado.in_([EstadoPedido.pendiente.value, EstadoPedido.aceptado.value]),
+    ))
+    if abierto:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ya tienes un pedido abierto de este servicio.")
+    limites.revisar_pedido(db, usuario.id)
+    limites.anotar_pedido(db, usuario.id)
     pedido = Pedido(servicio_id=servicio.id, cliente_id=usuario.id)
     db.add(pedido)
     db.commit()
@@ -59,6 +70,8 @@ def pedir_servicio(datos: PedidoCrear, usuario: Usuario = Depends(usuario_actual
 @router.get("", response_model=list[PedidoSalida])
 def mis_pedidos(
     como: Literal["cliente", "trabajador"] = Query(default="cliente"),
+    limite: int = Query(default=50, ge=1, le=100),
+    desde: int = Query(default=0, ge=0, le=10_000),
     usuario: Usuario = Depends(usuario_actual),
     db: Session = Depends(get_db),
 ):
@@ -72,12 +85,12 @@ def mis_pedidos(
         consulta = consulta.where(Pedido.cliente_id == usuario.id)
     else:
         consulta = consulta.join(Servicio).where(Servicio.trabajador_id == usuario.id)
-    return _salida(db, db.scalars(consulta.order_by(Pedido.fecha.desc())).all())
+    return _salida(db, db.scalars(consulta.order_by(Pedido.fecha.desc()).offset(desde).limit(limite)).all())
 
 
 @router.patch("/{pedido_id}", response_model=PedidoSalida)
 def cambiar_estado(
-    pedido_id: int,
+    pedido_id: IdRuta,
     cambio: CambioEstado,
     usuario: Usuario = Depends(usuario_actual),
     db: Session = Depends(get_db),
@@ -107,7 +120,7 @@ def cambiar_estado(
 
 @router.patch("/{pedido_id}/resena", response_model=PedidoSalida)
 def calificar(
-    pedido_id: int,
+    pedido_id: IdRuta,
     resena: Resena,
     usuario: Usuario = Depends(usuario_actual),
     db: Session = Depends(get_db),

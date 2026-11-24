@@ -2,7 +2,7 @@
 
 Uso local:  uv run python -m app.demo   (incluye un admin de prueba, solo en local)
 En producción se cargan solos al arrancar si DEMO_AUTOCARGA=1, SIN cuenta de administrador:
-el administrador real se define con ADMIN_CORREOS (ver seguridad.py).
+el administrador real se define con ADMIN_IDS (ver seguridad.py).
 Todas las cuentas de demostración usan la contraseña: demo12345 (son ficticias y públicas).
 """
 import random

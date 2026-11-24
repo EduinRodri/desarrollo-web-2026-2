@@ -11,6 +11,7 @@ from ..database import get_db
 from ..models import EstadoPedido, Pedido, Servicio, Usuario
 from ..reputacion import reputaciones
 from ..schemas import (
+    IdRuta,
     PerfilTrabajador,
     PerfilTrabajadorSalida,
     ResenaSalida,
@@ -18,30 +19,35 @@ from ..schemas import (
     UsuarioCrear,
     UsuarioPrivado,
 )
-from ..seguridad import crear_token, es_correo_admin, hashear, usuario_actual, verificar
+from ..seguridad import crear_token, es_id_admin, hashear, usuario_actual, verificar
 from .servicios import con_reputacion
 
 router = APIRouter(tags=["Usuarios y sesión"])
 
 
 @router.post("/usuarios", response_model=UsuarioPrivado, status_code=status.HTTP_201_CREATED)
-def registrarse(datos: UsuarioCrear, db: Session = Depends(get_db)):
-    """Crea una cuenta. Toda cuenta puede pedir servicios (RF1)."""
+def registrarse(datos: UsuarioCrear, request: Request, db: Session = Depends(get_db)):
+    """Crea una cuenta. Toda cuenta puede pedir servicios (RF1).
+    Máximo 5 intentos de registro por conexión (IP) por hora: frena cuentas falsas en masa."""
+    ip = limites.ip_del_cliente(request)
+    limites.revisar_registro(db, ip)
     if not datos.acepta_tratamiento_datos:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
             "Debes autorizar el tratamiento de tus datos (Ley 1581 de 2012) para registrarte.",
         )
     correo = datos.correo.lower()
+    # Se cuenta también el intento con correo repetido: así no se pueden probar miles de correos
+    # para averiguar cuáles están registrados (enumeración de cuentas).
+    limites.anotar_registro(db, ip)
     if db.scalar(select(Usuario.id).where(Usuario.correo == correo)):
         raise HTTPException(status.HTTP_409_CONFLICT, "Ya existe una cuenta con ese correo.")
     usuario = Usuario(
-        nombre=datos.nombre.strip(),
+        nombre=datos.nombre,
         correo=correo,
         telefono=datos.telefono,
         contrasena_hash=hashear(datos.contrasena),
         fecha_autorizacion_datos=datetime.now(timezone.utc),
-        es_admin=es_correo_admin(correo),
     )
     db.add(usuario)
     db.commit()
@@ -61,11 +67,13 @@ def iniciar_sesion(
     limites.revisar(db, correo, ip)
     usuario = db.scalar(select(Usuario).where(Usuario.correo == correo))
     # Mismo mensaje si falla el correo o la contraseña: no se revela cuál de los dos existe.
-    if usuario is None or not verificar(form.password, usuario.contrasena_hash):
+    # verificar() corre bcrypt SIEMPRE (con un hash de relleno si el correo no existe): así el
+    # tiempo de respuesta no delata qué correos están registrados.
+    if not verificar(form.password, usuario.contrasena_hash if usuario else None) or usuario is None:
         limites.anotar_fallo(db, correo, ip)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Correo o contraseña incorrectos.")
     limites.limpiar_correo(db, correo)
-    if es_correo_admin(usuario.correo) and not usuario.es_admin:  # se agregó a ADMIN_CORREOS después de registrarse
+    if es_id_admin(usuario.id) and not usuario.es_admin:  # se agregó a ADMIN_IDS después de registrarse
         usuario.es_admin = True
         db.commit()
     return Token(access_token=crear_token(usuario.id), usuario=usuario)
@@ -91,7 +99,7 @@ def activar_o_editar_perfil(
 
 
 @router.get("/trabajadores/{trabajador_id}", response_model=PerfilTrabajadorSalida)
-def perfil_publico(trabajador_id: int, db: Session = Depends(get_db)):
+def perfil_publico(trabajador_id: IdRuta, db: Session = Depends(get_db)):
     """Perfil del trabajador: nivel, servicios activos y reseñas recibidas."""
     trabajador = db.get(Usuario, trabajador_id)
     if trabajador is None or not trabajador.es_trabajador:

@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app import demo, main, seguridad
+from app import demo, limites, main, seguridad
 from app.database import Base, get_db
 from app.models import Usuario
 from app.reputacion import calcular_nivel
@@ -21,6 +21,9 @@ def cliente(monkeypatch):
     monkeypatch.setattr(main, "engine", motor)
     monkeypatch.setattr(main, "SessionLocal", Sesion)
     monkeypatch.setattr(demo, "SessionLocal", Sesion)
+    # Las pruebas crean muchas cuentas desde la misma IP; los límites reales se prueban aparte.
+    monkeypatch.setattr(limites, "MAX_REGISTROS_POR_IP", 1000)
+    monkeypatch.setattr(limites, "MAX_PEDIDOS_POR_CUENTA", 1000)
 
     def db_de_prueba():
         db = Sesion()
@@ -194,10 +197,12 @@ def test_reporte_solo_para_admin(cliente):
         "pedidos_por_oficio", "pedidos_por_zona", "trabajadores_promedio_bajo"}
 
 
-def test_admin_por_correo(cliente, monkeypatch):
-    monkeypatch.setattr(seguridad, "ADMIN_CORREOS", {"jefe@camellapp.co"})
-    h = registrar(cliente, "Jefe@camellapp.co", "Jefa Equipo")
-    assert cliente.get("/usuarios/me", headers=h).json()["es_admin"] is True
+def test_admin_por_numero_de_cuenta(cliente, monkeypatch):
+    h = registrar(cliente, "jefe@test.co", "Jefa Equipo")
+    mi_id = cliente.get("/usuarios/me", headers=h).json()["id"]
+    monkeypatch.setattr(seguridad, "ADMIN_IDS", {mi_id})
+    r = cliente.post("/sesion", data={"username": "jefe@test.co", "password": "clave-segura-1"})
+    h = {"Authorization": f"Bearer {r.json()['access_token']}"}
     assert cliente.get("/reportes", headers=h).status_code == 200
     h2 = registrar(cliente, "otro@test.co")
     assert cliente.get("/reportes", headers=h2).status_code == 403
@@ -263,3 +268,166 @@ def test_no_guarda_correo_ni_ip_en_claro(cliente):
     with cliente.Sesion() as db:
         claves = [i.clave for i in db.query(IntentoSesion).all()]
     assert len(claves) == 2 and all(len(c) == 64 and "privado" not in c for c in claves)
+
+
+# ---------- Pruebas de ataque (auditoría de seguridad del 23 nov) ----------
+from datetime import datetime, timedelta, timezone
+
+import jwt as pyjwt
+
+
+def _token(**cambios):
+    ahora = datetime.now(timezone.utc)
+    datos = {"sub": "1", "iat": ahora, "exp": ahora + timedelta(hours=1),
+             "iss": seguridad.EMISOR, "aud": seguridad.AUDIENCIA, **cambios}
+    datos = {k: v for k, v in datos.items() if v is not None}
+    return pyjwt.encode(datos, seguridad.CLAVE_SECRETA, algorithm="HS256")
+
+
+@pytest.mark.parametrize("token", [
+    "a.b.c",                                                          # basura
+    _token(exp=datetime.now(timezone.utc) - timedelta(seconds=1)),    # vencido
+    _token(aud="otra-app"),                                           # firmado para otro uso
+    _token(iss="otro-emisor"),
+    _token(iat=None),                                                 # le falta un dato obligatorio
+    pyjwt.encode({"sub": "1"}, "clave-adivinada-por-el-atacante-1234567890", algorithm="HS256"),
+    pyjwt.encode({"sub": "1", "exp": 9999999999}, None, algorithm="none"),  # ataque alg=none
+])
+def test_rechaza_tokens_falsos_o_alterados(cliente, token):
+    registrar(cliente, "ana@test.co")
+    r = cliente.get("/usuarios/me", headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 401
+
+
+def test_registrar_correo_ajeno_no_da_admin(cliente):
+    """El hueco de antes: registrar el correo del equipo daba permisos de administrador."""
+    h = registrar(cliente, "eduin@camellapp.co", "Atacante Uno")
+    assert cliente.get("/usuarios/me", headers=h).json()["es_admin"] is False
+    assert cliente.get("/reportes", headers=h).status_code == 403
+
+
+def test_no_se_puede_autoasignar_admin_al_registrarse(cliente):
+    r = cliente.post("/usuarios", json={
+        "nombre": "Ana Pérez", "correo": "masivo@test.co", "telefono": "3001234567",
+        "contrasena": "clave-segura-1", "acepta_tratamiento_datos": True,
+        "es_admin": True, "es_trabajador": True, "id": 1,
+    })
+    assert r.status_code == 201
+    assert r.json()["es_admin"] is False and r.json()["es_trabajador"] is False
+
+
+def _registro(correo, **cambios):
+    return {"nombre": "Ana Pérez", "correo": correo, "telefono": "3001234567",
+            "contrasena": "clave-segura-1", "acepta_tratamiento_datos": True, **cambios}
+
+
+def test_limite_de_registros_por_ip(cliente, monkeypatch):
+    monkeypatch.setattr(limites, "MAX_REGISTROS_POR_IP", 5)
+    for i in range(5):
+        cliente.post("/usuarios", json=_registro(f"bot{i}@test.co"))
+    assert cliente.post("/usuarios", json=_registro("bot9@test.co")).status_code == 429
+
+
+def test_limite_y_duplicados_de_pedidos(cliente, monkeypatch):
+    _, servicio = trabajador_con_servicio(cliente)
+    h = registrar(cliente, "spam@test.co")
+    assert cliente.post("/pedidos", headers=h, json={"servicio_id": servicio}).status_code == 201
+    assert cliente.post("/pedidos", headers=h, json={"servicio_id": servicio}).status_code == 409
+    monkeypatch.setattr(limites, "MAX_PEDIDOS_POR_CUENTA", 1)
+    pedido = cliente.get("/pedidos", headers=h).json()[0]["id"]
+    cliente.patch(f"/pedidos/{pedido}", headers=h, json={"estado": "cancelado"})
+    assert cliente.post("/pedidos", headers=h, json={"servicio_id": servicio}).status_code == 429
+
+
+@pytest.mark.parametrize("contrasena,motivo", [
+    ("12345678", "común"), ("demo12345", "común"), ("aaaaaaaaaa", "repetida"),
+    ("ñ" * 40, "más de 72 bytes"), ("        ", "solo espacios"), ("pruebaclave1", "contiene el correo"),
+])
+def test_rechaza_contrasenas_debiles(cliente, contrasena, motivo):
+    r = cliente.post("/usuarios", json=_registro("prueba@test.co", contrasena=contrasena))
+    assert r.status_code == 422, motivo
+
+
+def test_contrasena_gigante_al_iniciar_sesion_no_rompe(cliente):
+    registrar(cliente, "ana@test.co")
+    r = cliente.post("/sesion", data={"username": "ana@test.co", "password": "ñ" * 5000})
+    assert r.status_code == 401
+
+
+@pytest.mark.parametrize("nombre", ["Equipo Camellapp", "Soporte CAMELL APP", "   ", "Ana\x00Pérez"])
+def test_rechaza_nombres_que_suplantan_o_vacios(cliente, nombre):
+    assert cliente.post("/usuarios", json=_registro("x@test.co", nombre=nombre)).status_code == 422
+
+
+def test_resena_de_solo_espacios_no_pasa(cliente):
+    h_t, servicio = trabajador_con_servicio(cliente)
+    h = registrar(cliente, "cli@test.co")
+    p = cliente.post("/pedidos", headers=h, json={"servicio_id": servicio}).json()["id"]
+    cliente.patch(f"/pedidos/{p}", headers=h_t, json={"estado": "aceptado"})
+    cliente.patch(f"/pedidos/{p}", headers=h_t, json={"estado": "terminado"})
+    r = cliente.patch(f"/pedidos/{p}/resena", headers=h, json={"estrellas": 5, "comentario": "     "})
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize("ruta", [
+    "/pedidos/99999999999999999999", "/servicios/99999999999999999999",
+    "/trabajadores/99999999999999999999", "/servicios?desde=99999999999999",
+    "/servicios?categoria_id=99999999999999999999", "/servicios/0", "/servicios?limite=100000",
+])
+def test_numeros_absurdos_no_causan_error_500(cliente, ruta):
+    h = registrar(cliente, "ana@test.co")
+    r = cliente.get(ruta, headers=h)
+    assert r.status_code in (404, 405, 422), r.text
+
+
+def test_nadie_ve_ni_toca_pedidos_ajenos(cliente):
+    """BOLA (OWASP API1): un tercero no puede cambiar, calificar ni listar un pedido que no es suyo."""
+    h_t, servicio = trabajador_con_servicio(cliente)
+    h_c = registrar(cliente, "cliente@test.co")
+    h_x = registrar(cliente, "intruso@test.co")
+    p = cliente.post("/pedidos", headers=h_c, json={"servicio_id": servicio}).json()["id"]
+    for estado in ("aceptado", "rechazado", "terminado", "cancelado"):
+        assert cliente.patch(f"/pedidos/{p}", headers=h_x, json={"estado": estado}).status_code == 403
+    r = cliente.patch(f"/pedidos/{p}/resena", headers=h_x, json={"estrellas": 1, "comentario": "malo"})
+    assert r.status_code == 403
+    assert cliente.get("/pedidos", headers=h_x).json() == []
+    assert cliente.get("/pedidos?como=trabajador", headers=h_x).json() == []
+    # El cliente tampoco puede aceptar su propio pedido (eso le toca al trabajador).
+    assert cliente.patch(f"/pedidos/{p}", headers=h_c, json={"estado": "aceptado"}).status_code == 403
+
+
+def test_nadie_edita_servicios_ajenos(cliente):
+    _, servicio = trabajador_con_servicio(cliente)
+    h_x, _ = trabajador_con_servicio(cliente, "otro-plomero@test.co")
+    r = cliente.patch(f"/servicios/{servicio}", headers=h_x, json={"titulo": "Estafa: paga por adelantado"})
+    assert r.status_code == 403
+
+
+def test_respuestas_publicas_sin_datos_privados(cliente):
+    """Exposición excesiva (API3): ni teléfono ni correo de nadie en lo público."""
+    trabajador_con_servicio(cliente)
+    servicios = cliente.get("/servicios")
+    perfil = cliente.get(f"/trabajadores/{servicios.json()[0]['trabajador']['id']}")
+    texto = servicios.text + perfil.text
+    assert "3001234567" not in texto and "plomero@test.co" not in texto and "contrasena" not in texto
+
+
+def test_servicio_pausado_no_es_publico(cliente):
+    h, servicio = trabajador_con_servicio(cliente)
+    cliente.patch(f"/servicios/{servicio}", headers=h, json={"activo": False})
+    assert cliente.get(f"/servicios/{servicio}").status_code == 404
+
+
+def test_cabeceras_de_seguridad(cliente):
+    r = cliente.get("/")
+    assert r.headers["X-Content-Type-Options"] == "nosniff"
+    assert r.headers["X-Frame-Options"] == "DENY"
+    assert "frame-ancestors 'none'" in r.headers["Content-Security-Policy"]
+    h = registrar(cliente, "ana@test.co")
+    assert cliente.get("/usuarios/me", headers=h).headers["Cache-Control"] == "no-store"
+
+
+def test_cors_rechaza_otros_sitios(cliente):
+    r = cliente.options("/sesion", headers={"Origin": "https://sitio-malo.example",
+                                             "Access-Control-Request-Method": "POST"})
+    assert r.headers.get("access-control-allow-origin") != "https://sitio-malo.example"
