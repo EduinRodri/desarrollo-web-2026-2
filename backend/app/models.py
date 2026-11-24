@@ -89,3 +89,14 @@ class Pedido(Base):
     __table_args__ = (
         CheckConstraint("estrellas IS NULL OR (estrellas BETWEEN 1 AND 5)", name="estrellas_1_a_5"),
     )
+
+
+class IntentoSesion(Base):
+    """Un inicio de sesión fallido. Se guarda en la base porque en Vercel cada petición puede caer
+    en una instancia distinta y la memoria no se comparte (OWASP API4: consumo de recursos)."""
+    __tablename__ = "intentos_sesion"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    # Huella SHA-256 de "correo:..." o "ip:...": no se guarda el correo ni la IP en claro (Ley 1581).
+    clave: Mapped[str] = mapped_column(String(64), index=True)
+    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora, index=True)

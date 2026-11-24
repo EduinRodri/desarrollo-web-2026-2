@@ -209,3 +209,57 @@ def test_demo_se_carga_una_vez_y_sin_admin(cliente):
     with cliente.Sesion() as db:
         assert db.query(Usuario).filter(Usuario.es_admin.is_(True)).count() == 0
     assert len(cliente.get("/servicios").json()) == 8
+
+
+# ---------- Límite de intentos de inicio de sesión (OWASP API4 / ASVS 2.2.1) ----------
+def test_bloquea_tras_5_fallos_del_mismo_correo(cliente):
+    registrar(cliente, "victima@test.co")
+    for _ in range(5):
+        r = cliente.post("/sesion", data={"username": "victima@test.co", "password": "mala"})
+        assert r.status_code == 401
+    r = cliente.post("/sesion", data={"username": "victima@test.co", "password": "mala"})
+    assert r.status_code == 429
+    assert r.headers["Retry-After"] == "900"
+    # Bloqueado aunque ahora ponga la contraseña correcta: así un ataque no puede seguir adivinando.
+    r = cliente.post("/sesion", data={"username": "victima@test.co", "password": "clave-segura-1"})
+    assert r.status_code == 429
+
+
+def test_entrar_bien_borra_los_fallos_del_correo(cliente):
+    registrar(cliente, "olvidadizo@test.co")
+    for _ in range(4):
+        cliente.post("/sesion", data={"username": "olvidadizo@test.co", "password": "mala"})
+    r = cliente.post("/sesion", data={"username": "olvidadizo@test.co", "password": "clave-segura-1"})
+    assert r.status_code == 200
+    for _ in range(4):  # el contador volvió a cero: 4 fallos más no bloquean
+        r = cliente.post("/sesion", data={"username": "olvidadizo@test.co", "password": "mala"})
+        assert r.status_code == 401
+
+
+def test_bloquea_una_ip_que_prueba_muchos_correos(cliente):
+    for i in range(20):
+        cliente.post("/sesion", data={"username": f"x{i}@test.co", "password": "mala"})
+    r = cliente.post("/sesion", data={"username": "otro@test.co", "password": "mala"})
+    assert r.status_code == 429
+
+
+def test_los_fallos_viejos_no_cuentan(cliente):
+    from datetime import timedelta
+    from app.models import IntentoSesion
+    registrar(cliente, "paciente@test.co")
+    for _ in range(5):
+        cliente.post("/sesion", data={"username": "paciente@test.co", "password": "mala"})
+    with cliente.Sesion() as db:  # se simula que pasaron 16 minutos
+        for intento in db.query(IntentoSesion).all():
+            intento.fecha = intento.fecha - timedelta(minutes=16)
+        db.commit()
+    r = cliente.post("/sesion", data={"username": "paciente@test.co", "password": "clave-segura-1"})
+    assert r.status_code == 200
+
+
+def test_no_guarda_correo_ni_ip_en_claro(cliente):
+    from app.models import IntentoSesion
+    cliente.post("/sesion", data={"username": "privado@test.co", "password": "mala"})
+    with cliente.Sesion() as db:
+        claves = [i.clave for i in db.query(IntentoSesion).all()]
+    assert len(claves) == 2 and all(len(c) == 64 and "privado" not in c for c in claves)

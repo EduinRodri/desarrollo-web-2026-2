@@ -1,11 +1,12 @@
 """RF1 (registro e inicio de sesión) y RF2 (perfil de trabajador)."""
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from .. import limites
 from ..database import get_db
 from ..models import EstadoPedido, Pedido, Servicio, Usuario
 from ..reputacion import reputaciones
@@ -47,13 +48,23 @@ def registrarse(datos: UsuarioCrear, db: Session = Depends(get_db)):
     return usuario
 
 
-@router.post("/sesion", response_model=Token)
-def iniciar_sesion(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """Recibe correo (en el campo `username`) y contraseña; devuelve un token JWT."""
-    usuario = db.scalar(select(Usuario).where(Usuario.correo == form.username.lower()))
+@router.post("/sesion", response_model=Token, responses={429: {"description": "Demasiados intentos fallidos"}})
+def iniciar_sesion(
+    request: Request,
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    """Recibe correo (en el campo `username`) y contraseña; devuelve un token JWT.
+    Tras 5 fallos con el mismo correo (o 20 desde la misma IP) en 15 minutos responde 429."""
+    correo = form.username.lower()
+    ip = limites.ip_del_cliente(request)
+    limites.revisar(db, correo, ip)
+    usuario = db.scalar(select(Usuario).where(Usuario.correo == correo))
     # Mismo mensaje si falla el correo o la contraseña: no se revela cuál de los dos existe.
     if usuario is None or not verificar(form.password, usuario.contrasena_hash):
+        limites.anotar_fallo(db, correo, ip)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Correo o contraseña incorrectos.")
+    limites.limpiar_correo(db, correo)
     if es_correo_admin(usuario.correo) and not usuario.es_admin:  # se agregó a ADMIN_CORREOS después de registrarse
         usuario.es_admin = True
         db.commit()
