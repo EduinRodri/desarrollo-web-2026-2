@@ -144,6 +144,13 @@ class ResenaSalida(BaseModel):
     cliente: str
 
 
+class ResenaDestacada(ResenaSalida):
+    """Reseña real para la portada: a quién califica y por qué oficio."""
+    trabajador_id: int
+    trabajador: str
+    oficio: str
+
+
 class PerfilTrabajadorSalida(BaseModel):
     trabajador: UsuarioPublico
     reputacion: Reputacion

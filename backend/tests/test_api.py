@@ -186,6 +186,32 @@ def test_recomendado_con_cinco_resenas(cliente):
     assert rep == {"promedio": 4.8, "resenas": 5, "nivel": "Recomendado"}
 
 
+def _terminar_y_calificar(c, ht, servicio, correo, nombre, estrellas, comentario):
+    hc = registrar(c, correo, nombre)
+    pid = c.post("/pedidos", headers=hc, json={"servicio_id": servicio}).json()["id"]
+    c.patch(f"/pedidos/{pid}", headers=ht, json={"estado": "aceptado"})
+    c.patch(f"/pedidos/{pid}", headers=ht, json={"estado": "terminado"})
+    assert c.patch(f"/pedidos/{pid}/resena", headers=hc,
+                   json={"estrellas": estrellas, "comentario": comentario}).status_code == 200
+
+
+def test_resenas_destacadas_solo_buenas_con_texto_y_una_por_trabajador(cliente):
+    ht, servicio = trabajador_con_servicio(cliente)
+    _terminar_y_calificar(cliente, ht, servicio, "a@test.co", "Rosa Martínez", 5, "Llegó a la hora y dejó todo limpio.")
+    _terminar_y_calificar(cliente, ht, servicio, "b@test.co", "Pedro Gómez", 5, "Muy bien")          # comentario corto: no sale
+    _terminar_y_calificar(cliente, ht, servicio, "d@test.co", "Juan Díaz", 2, "No volvió a terminar el trabajo.")  # 2 estrellas: no sale
+    _terminar_y_calificar(cliente, ht, servicio, "e@test.co", "Marta Ruiz", 4, "Precio claro desde el principio, buen trato.")
+
+    destacadas = cliente.get("/resenas/destacadas").json()
+    # Una por trabajador: de las dos que califican (Rosa y Marta), solo la más reciente
+    assert len(destacadas) == 1
+    r = destacadas[0]
+    assert r["cliente"] == "Marta"                      # solo el primer nombre
+    assert r["trabajador"] == "Carlos" and r["estrellas"] == 4
+    assert r["oficio"] and r["trabajador_id"]
+    assert "Ruiz" not in str(destacadas)
+
+
 def test_reporte_solo_para_admin(cliente):
     h = registrar(cliente, "ana@test.co")
     assert cliente.get("/reportes", headers=h).status_code == 403

@@ -8,21 +8,39 @@
 /* ---------- Héroe ---------- */
 .heroe { padding: var(--esp-8) 0 var(--esp-6); display: grid; gap: var(--esp-6); align-items: center; }
 .heroe-col { max-width: 760px; min-width: 0; }
-/* Héroe = tarjeta de marca con el producto real asomando desde abajo (patrón de páginas de apps).
-   El mismo diseño en todo tamaño: en celular el teléfono asoma debajo del texto; en computador, a la derecha.
-   La tarjeta recorta el teléfono (overflow), así se ve la parte que importa: servicio, calificación y precio. */
-.heroe { margin-top: var(--esp-4); padding: var(--esp-6) var(--esp-5) 0; background: var(--color-accion-suave);
-  border-radius: var(--radio-xl); overflow: hidden; }
-.heroe-col { padding-bottom: var(--esp-6); }
-.heroe-producto { height: 250px; display: flex; justify-content: center; align-items: flex-start; }
-.heroe-producto img { width: 240px; height: auto; filter: drop-shadow(0 18px 30px rgb(43 30 22 / 0.22)); }
+/* Héroe (diseño del equipo, 24 nov): banda terracota suave a todo el ancho del contenido; texto + búsqueda + atajos
+   a la izquierda y un servicio REAL en tarjeta a la derecha (en celular, debajo). Todo HTML: sin imágenes. */
+.heroe { margin-top: var(--esp-4); padding: var(--esp-8) var(--esp-5); background: var(--color-accion-suave); border-radius: var(--radio-xl); }
 @media (min-width: 900px) {
-  .heroe { margin-top: var(--esp-6); padding: var(--esp-12) var(--esp-12) 0; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--esp-8); align-items: end; }
-  .heroe-col { padding-bottom: var(--esp-12); align-self: center; }
-  .heroe-producto { height: 400px; }
-  .heroe-producto img { width: 300px; }
+  .heroe { margin-top: var(--esp-6); padding: var(--esp-12); grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--esp-12); }
 }
-.heroe h1 { font-size: clamp(2rem, 7vw, 3.25rem); line-height: 1.08; letter-spacing: -0.025em; margin: var(--esp-3) 0; text-wrap: balance; }
+/* Peso 800 solo en el titular de portada (Figtree variable: no descarga nada extra) */
+.heroe h1 { font-size: clamp(2.1rem, 7.5vw, 3.5rem); line-height: 1.04; letter-spacing: -0.03em; font-weight: 800; margin: var(--esp-3) 0; text-wrap: balance; }
+.heroe-atajos { display: flex; flex-wrap: wrap; gap: var(--esp-2); margin-top: var(--esp-4); }
+.heroe-atajos .chip { background: var(--color-superficie); color: var(--color-texto); text-decoration: none; }
+
+/* Tarjeta del héroe: un servicio real, como nuestra página de detalle. Inclinada 2° en computador (como el diseño) */
+.heroe-tarjeta { display: flex; flex-direction: column; gap: var(--esp-3); padding: var(--esp-6); max-width: 440px; width: 100%; justify-self: center;
+  background: var(--color-superficie); color: var(--color-texto); text-decoration: none; border-radius: var(--radio-xl);
+  box-shadow: 0 24px 48px -12px rgb(110 40 18 / 0.25), var(--sombra-1); transition: transform var(--dur-media) var(--curva); }
+.heroe-tarjeta-cargando { min-height: 300px; }
+.heroe-tarjeta-cargando .esqueleto { flex: 1; }
+@media (min-width: 900px) { .heroe-tarjeta { transform: rotate(2deg); } .heroe-tarjeta:hover { transform: rotate(0deg) translateY(-2px); } }
+.heroe-tarjeta-logo { display: inline-flex; align-items: center; gap: var(--esp-2); font-weight: var(--peso-fuerte); font-size: var(--texto-lg); }
+.heroe-tarjeta-logo svg { width: 28px; height: 28px; }
+.heroe-tarjeta-logo b { color: var(--color-accion-texto); }
+.heroe-tarjeta-titulo { font-size: var(--texto-xl); line-height: var(--linea-xl); letter-spacing: -0.01em; }
+.heroe-tarjeta-persona { display: flex; align-items: center; gap: var(--esp-3); padding: var(--esp-3); border: 1px solid var(--color-borde); border-radius: var(--radio-lg); min-width: 0; }
+.pila-xs { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.texto-fuerte { color: var(--color-texto); font-weight: var(--peso-fuerte); }
+
+/* «Lo dicen los vecinos»: la cita manda; quién la dice y a quién califica, abajo */
+.titulo-marca { font-weight: 800; letter-spacing: -0.02em; }
+@media (min-width: 768px) { .bloque .titulo-marca { font-size: var(--texto-2xl); line-height: var(--linea-2xl); } }
+.vecino { display: flex; flex-direction: column; gap: var(--esp-4); margin: 0; }
+.vecino blockquote { margin: 0; font-size: var(--texto-lg); line-height: var(--linea-lg); font-weight: var(--peso-medio); flex: 1; }
+.vecino-pie { display: flex; align-items: center; gap: var(--esp-3); }
+.vecino-pie a { color: var(--color-texto-suave); }
 .heroe-texto { font-size: var(--texto-lg); line-height: var(--linea-lg); color: var(--color-texto-suave); max-width: 46ch; }
 .heroe-busqueda { position: relative; display: flex; gap: var(--esp-2); margin-top: var(--esp-6); padding: 6px; background: var(--color-superficie); border: 1px solid var(--color-borde-campo); border-radius: var(--radio-lg); box-shadow: var(--sombra-2); }
 .heroe-busqueda:focus-within { border-color: var(--color-accion); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accion) 25%, transparent), var(--sombra-2); }
@@ -59,15 +77,23 @@
 
 .banda-trabajador { margin-top: var(--esp-12); padding: var(--esp-8) var(--esp-6); border-radius: var(--radio-xl); background: var(--terra-600); color: #fff;
   display: grid; gap: var(--esp-6); align-items: center; }
-@media (min-width: 768px) { .banda-trabajador { grid-template-columns: minmax(220px, 320px) 1fr; gap: var(--esp-12); padding: var(--esp-8) var(--esp-12); } }
+@media (min-width: 900px) { .banda-trabajador { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--esp-12); padding: var(--esp-12); } }
 .banda-texto { display: flex; flex-direction: column; align-items: flex-start; }
-.banda-trabajador h2 { font-size: var(--texto-xl); line-height: var(--linea-xl); max-width: 22ch; text-wrap: balance; }
-@media (min-width: 768px) { .banda-trabajador h2 { font-size: var(--texto-2xl); line-height: var(--linea-2xl); } }
-.banda-trabajador p { color: var(--terra-100); margin: var(--esp-2) 0 var(--esp-5); max-width: 52ch; }
-/* Versión invertida (manual §3: sobre terracota, el pin va en blanco): la misma ilustración, con los tokens
-   cambiados solo dentro de la banda. Fijos en claro y oscuro, porque la banda es terracota en los dos. */
-.banda-ilustracion { width: 100%; max-width: 300px; aspect-ratio: 460 / 420; height: auto; justify-self: center;
-  --color-accion: #fff; --color-accion-suave: var(--terra-700); --color-superficie: var(--terra-600); }
+.banda-trabajador .sobretitulo { color: var(--terra-100); }
+.banda-trabajador h2 { font-size: clamp(1.75rem, 6vw, 2.75rem); line-height: 1.08; font-weight: 800; letter-spacing: -0.03em; margin-top: var(--esp-2); max-width: 16ch; text-wrap: balance; }
+.banda-trabajador p:not(.sobretitulo) { color: var(--terra-100); margin: var(--esp-3) 0 var(--esp-6); max-width: 46ch; }
+/* Vista previa del perfil del maestro: lo que de verdad tendrá al empezar (Nuevo, sin reseñas). Inclinada −2° */
+.perfil-previa { display: flex; flex-direction: column; gap: var(--esp-4); padding: var(--esp-6); max-width: 420px; width: 100%; justify-self: center;
+  background: var(--terra-50); color: var(--gris-900); border-radius: var(--radio-xl); box-shadow: 0 24px 48px -12px rgb(20 8 4 / 0.45);
+  color-scheme: light; /* la tarjeta es clara en los dos temas: light-dark() resuelve aquí siempre en claro */ }
+@media (min-width: 900px) { .perfil-previa { transform: rotate(-2deg); } }
+.perfil-previa .chip { background: #fff; color: var(--gris-900); border-color: var(--gris-200); }
+.perfil-previa .suave { color: var(--gris-600); }
+.perfil-previa .heroe-tarjeta-persona { border: 0; padding: 0; }
+.perfil-previa-nombre { font-size: var(--texto-lg); }
+.avatar-tu { background: var(--verde-100); color: var(--verde-900); }
+.perfil-previa-hueco { display: grid; place-items: center; min-height: 88px; padding: var(--esp-4); text-align: center; border: 2px dashed var(--terra-200);
+  border-radius: var(--radio-lg); background: var(--terra-100); color: var(--terra-700); font-weight: var(--peso-medio); font-size: var(--texto-sm); }
 .boton-claro { background: #fff; color: var(--terra-700); }
 .boton-claro:hover { background: var(--terra-50); color: var(--terra-800); }
 

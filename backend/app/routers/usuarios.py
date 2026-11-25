@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from .. import limites
@@ -14,6 +14,7 @@ from ..schemas import (
     IdRuta,
     PerfilTrabajador,
     PerfilTrabajadorSalida,
+    ResenaDestacada,
     ResenaSalida,
     Token,
     UsuarioCrear,
@@ -99,6 +100,44 @@ def activar_o_editar_perfil(
     usuario.zona = datos.zona
     db.commit()
     return usuario
+
+
+@router.get("/resenas/destacadas", response_model=list[ResenaDestacada])
+def resenas_destacadas(db: Session = Depends(get_db)):
+    """Reseñas reales para «Lo dicen los vecinos» en la portada.
+
+    Solo pedidos terminados, de 4 o 5 estrellas y con un comentario que diga algo (20+ caracteres).
+    Una por trabajador, para que no salgan tres del mismo. Del cliente, solo el primer nombre (privacidad).
+    """
+    candidatas = db.scalars(
+        select(Pedido)
+        .options(
+            selectinload(Pedido.cliente),
+            selectinload(Pedido.servicio).selectinload(Servicio.trabajador),
+            selectinload(Pedido.servicio).selectinload(Servicio.categoria),
+        )
+        .where(
+            Pedido.estado == EstadoPedido.terminado.value,
+            Pedido.estrellas >= 4,
+            func.length(Pedido.comentario) >= 20,
+        )
+        .order_by(Pedido.fecha.desc())
+        .limit(60)
+    ).all()
+    vistos, salida = set(), []
+    for p in candidatas:
+        t = p.servicio.trabajador
+        if t.id in vistos:
+            continue
+        vistos.add(t.id)
+        salida.append(ResenaDestacada(
+            estrellas=p.estrellas, comentario=p.comentario, fecha=p.fecha,
+            cliente=p.cliente.nombre.split()[0],
+            trabajador_id=t.id, trabajador=t.nombre.split()[0], oficio=p.servicio.categoria.nombre,
+        ))
+        if len(salida) == 3:
+            break
+    return salida
 
 
 @router.get("/trabajadores/{trabajador_id}", response_model=PerfilTrabajadorSalida)

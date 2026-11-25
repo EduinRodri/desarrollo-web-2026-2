@@ -81,11 +81,19 @@ El movimiento explica, no decora. Con «reducir movimiento» activado en el tel�
 **Un lenguaje para cada cosa** (23 nov): el **producto real** (capturas en un teléfono) muestra qué hace la app; las **escenas del pin** son para
 momentos de marca, vacíos y errores. No se mezclan en la misma sección.
 
-**Héroe del inicio:** tarjeta de marca (terracota suave) con el titular y la búsqueda; el teléfono con una captura real del detalle de un servicio
-asoma desde el borde inferior. El mismo diseño en todo tamaño. `public/heroe-telefono-{320,560}.webp` (21/43 KB, `srcset`, precargada).
+**Inicio, secciones diseñadas por el equipo (24 nov)**, construidas en código con los tokens (ninguna imagen):
+- **Héroe:** «Ajá, ¿y ese camello quién te lo hace?●» (titular de portada en peso **800**: Figtree variable, sin descarga extra), búsqueda,
+  atajos a los oficios más buscados y una **tarjeta con un servicio real** (el mejor calificado), inclinada 2° en computador. El botón no dice
+  «Buscar camello»: en la Costa eso se entiende como *buscar empleo*.
+- **«Lo dicen los vecinos●»:** solo reseñas reales (`GET /resenas/destacadas`: terminadas, 4-5 estrellas, comentario de 20+ caracteres,
+  una por maestro, primer nombre del cliente). Nunca reseñas «de ejemplo».
+- **Banda «Tu talento merece clientes●»** para **maestros y emprendedores** (la app incluye niñeras, cocina y eventos, donde «maestro» no
+  encaja). La vista previa del perfil muestra lo que de verdad tendrá al empezar: insignia «Nuevo» y sin reseñas; nada de fotos (la app no las permite todavía).
+- **Descartado:** el paquete de imágenes generadas con IA en azul marino (logo con llave, mascota camello, íconos PNG, avatares). Es otra
+  marca, no se puede mantener igual y los avatares ponen caras inventadas a maestros reales.
 
 **Escena del pin** (`components/Ilustraciones.jsx`, `IlustracionHeroe`): se arma con los tres activos distintivos, no con clipart.
-El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. Vive en la **banda para trabajadores** porque cuenta su oferta al pie de la letra (zona → servicios → reputación), en la **versión invertida** (tokens cambiados solo dentro de la banda: blanco sobre terracota). Su sol es el de la banda: el titular de ahí no lleva otro. SVG en línea, `aria-hidden`.
+El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. Hoy no está en uso (24 nov: la banda pasó al diseño del equipo); queda para la familia de estados vacíos. Admite una **versión invertida** cambiando los tokens solo en su contenedor (blanco sobre terracota). SVG en línea, `aria-hidden`.
 **Descartados el 23 nov:** una casa genérica (sin identidad) y un panorama horizontal de la calle (pesado y plano). Lección: primero un sistema de ilustración (retícula, trazo, escalas), después los dibujos.
 
 **Mockups en teléfono** (`docs/mockups/`): capturas **reales de producción** (nunca inventadas) en un marco de celular dibujado en SVG.

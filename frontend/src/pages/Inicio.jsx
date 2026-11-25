@@ -6,13 +6,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { ArrowRight, ChevronDown, HandCoins, MapPin, Search, ShieldCheck, Star, UserCheck } from 'lucide-react'
-import api from '../api'
+import api, { pesos } from '../api'
 import { useAuth } from '../context/AuthContext'
 import { useCatalogo } from '../hooks/useCatalogo'
 import { puntaje } from '../reputacion'
-import { Avatar, Calificacion, Nivel } from '../components/Ui'
-import { PuntoSol } from '../components/Marca'
-import { IlustracionHeroe } from '../components/Ilustraciones'
+import { Avatar, Calificacion, Estrellas, Nivel } from '../components/Ui'
+import { Logo, PuntoSol } from '../components/Marca'
 import { ICONOS_GRUPO } from '../components/oficios'
 
 const PREGUNTAS = [
@@ -24,20 +23,71 @@ const PREGUNTAS = [
   ['¿En qué zonas funciona?', 'Malambo, Soledad, Barranquilla, Galapa y Puerto Colombia.'],
 ]
 
-function Destacados() {
-  const [servicios, setServicios] = useState(null)
-  useEffect(() => { api.get('/servicios', { params: { limite: 50 } }).then(({ data }) => setServicios(data)).catch(() => setServicios([])) }, [])
+// Oficios más pedidos: atajos debajo de la búsqueda (llevan a /buscar con el texto ya escrito).
+const ATAJOS = ['Plomería', 'Aire acondicionado', 'Pintura', 'Electricidad']
 
-  // Un servicio por trabajador, los 3 mejores según el promedio bayesiano.
-  const top = useMemo(() => {
-    if (!servicios) return null
-    const vistos = new Set()
-    return [...servicios].sort((a, b) => puntaje(b) - puntaje(a))
-      // «Mejor calificados» solo si de verdad lo son: 3+ reseñas y promedio de 4 o más.
-      .filter((s) => s.reputacion?.resenas >= 3 && s.reputacion.promedio >= 4 && !vistos.has(s.trabajador.id) && vistos.add(s.trabajador.id))
-      .slice(0, 3)
-  }, [servicios])
+// Tarjeta del héroe: un servicio REAL (el mejor calificado), dibujado como nuestra página de detalle.
+// Es HTML, no una imagen: el elemento más grande de la pantalla vuelve a ser el titular (mejor LCP).
+// Mientras llega la API ocupa el mismo alto, para que nada salte (CLS 0).
+function TarjetaHeroe({ servicio }) {
+  if (!servicio) return <div className="heroe-tarjeta heroe-tarjeta-cargando" aria-hidden="true"><div className="esqueleto" /></div>
+  const { trabajador, categoria, reputacion } = servicio
+  return (
+    <Link to={`/servicios/${servicio.id}`} className="heroe-tarjeta" aria-label={`Ejemplo real: ${servicio.titulo}, con ${trabajador.nombre}`}>
+      <span className="heroe-tarjeta-logo"><Logo /></span>
+      <span className="texto-sm suave">Servicios / {categoria.nombre}</span>
+      <strong className="heroe-tarjeta-titulo">{servicio.titulo}</strong>
+      <span className="fila-flex"><Nivel reputacion={reputacion} /><Calificacion reputacion={reputacion} /></span>
+      <span className="heroe-tarjeta-persona">
+        <Avatar nombre={trabajador.nombre} />
+        <span className="pila-xs">
+          <strong className="persona-nombre">{trabajador.nombre}</strong>
+          <span className="texto-xs suave">{trabajador.zona} · Ver perfil</span>
+        </span>
+      </span>
+      <span className="texto-sm suave">Precio de referencia <strong className="texto-fuerte">Desde {pesos.format(servicio.precio_desde)}</strong></span>
+    </Link>
+  )
+}
 
+// «Lo dicen los vecinos»: reseñas REALES de pedidos terminados (GET /resenas/destacadas), nunca de ejemplo.
+// En vez del barrio del cliente (no lo guardamos), cada una dice a quién califica y por qué oficio.
+function Vecinos() {
+  const [resenas, setResenas] = useState(null)
+  useEffect(() => { api.get('/resenas/destacadas').then(({ data }) => setResenas(data)).catch(() => setResenas([])) }, [])
+  if (resenas && resenas.length === 0) return null
+  return (
+    <section className="bloque" aria-labelledby="t-vecinos">
+      <div className="bloque-cabeza"><h2 id="t-vecinos" className="titulo-marca">Lo dicen los vecinos<PuntoSol /></h2></div>
+      <div className="rejilla">
+        {(resenas ?? [1, 2, 3]).map((r, i) => r.cliente ? (
+          <figure key={i} className="tarjeta vecino">
+            <Estrellas valor={r.estrellas} />
+            <blockquote>{r.comentario}</blockquote>
+            <figcaption className="vecino-pie">
+              <Avatar nombre={r.cliente} />
+              <span className="pila-xs">
+                <strong>{r.cliente}</strong>
+                <Link to={`/trabajadores/${r.trabajador_id}`} className="texto-xs">sobre {r.trabajador} · {r.oficio}</Link>
+              </span>
+            </figcaption>
+          </figure>
+        ) : <div key={i} className="tarjeta vecino" aria-hidden="true"><div className="esqueleto" style={{ height: 150 }} /></div>)}
+      </div>
+    </section>
+  )
+}
+
+// Un servicio por trabajador, los mejores según el promedio bayesiano.
+// «Mejor calificados» solo si de verdad lo son: 3+ reseñas y promedio de 4 o más.
+function mejores(servicios) {
+  if (!servicios) return null
+  const vistos = new Set()
+  return [...servicios].sort((a, b) => puntaje(b) - puntaje(a))
+    .filter((s) => s.reputacion?.resenas >= 3 && s.reputacion.promedio >= 4 && !vistos.has(s.trabajador.id) && vistos.add(s.trabajador.id))
+}
+
+function Destacados({ top }) {
   if (top && top.length === 0) return null
   return (
     <section className="bloque" aria-labelledby="t-destacados">
@@ -67,6 +117,10 @@ export default function Inicio() {
   const { porGrupo } = useCatalogo()
   const navegar = useNavigate()
   const [texto, setTexto] = useState('')
+  // Una sola consulta de servicios para la tarjeta del héroe y los destacados
+  const [servicios, setServicios] = useState(null)
+  useEffect(() => { api.get('/servicios', { params: { limite: 50 } }).then(({ data }) => setServicios(data)).catch(() => setServicios([])) }, [])
+  const top = useMemo(() => mejores(servicios), [servicios])
 
   const buscar = (e) => {
     e.preventDefault()
@@ -75,11 +129,13 @@ export default function Inicio() {
 
   return (
     <>
+      {/* Héroe (diseño del equipo, 24 nov): titular en la voz de la Costa + búsqueda + atajos + un servicio real.
+          Se mantiene la búsqueda (no un botón «Buscar camello»: en la Costa eso suena a «buscar empleo»). */}
       <section className="heroe">
         <div className="heroe-col">
-          <p className="sobretitulo">Malambo y área metropolitana de Barranquilla</p>
-          <h1>Camello bien hecho, cerca de ti<PuntoSol /></h1>
-          <p className="heroe-texto">Encuentra plomeros, electricistas, mecánicos y más de tu zona, con reseñas de vecinos que ya los contrataron.</p>
+          <p className="sobretitulo">Malambo, Barranquilla y su área metropolitana</p>
+          <h1>Ajá, ¿y ese camello quién te lo hace?<PuntoSol /></h1>
+          <p className="heroe-texto">Plomeros, electricistas, técnicos y emprendedores de tu barrio, con reseñas de vecinos que ya los contrataron.</p>
           <form className="heroe-busqueda" role="search" onSubmit={buscar}>
             <label htmlFor="q-inicio" className="solo-lector">¿Qué necesitas arreglar?</label>
             <Search aria-hidden="true" />
@@ -87,15 +143,11 @@ export default function Inicio() {
               onChange={(e) => setTexto(e.target.value)} autoComplete="off" />
             <button className="boton">Buscar</button>
           </form>
+          <nav className="heroe-atajos" aria-label="Oficios más buscados">
+            {ATAJOS.map((a) => <Link key={a} to={`/buscar?q=${encodeURIComponent(a)}`} className="chip">{a}</Link>)}
+          </nav>
         </div>
-        {/* El producto real como héroe (captura de producción en un teléfono), igual en todos los tamaños:
-            asoma desde el borde inferior de la tarjeta. srcset: el celular descarga 21 KB, el computador 43 KB.
-            width/height reservan el espacio (CLS 0). Recurso propio: lo permite la CSP. */}
-        <div className="heroe-producto">
-          <img src="/heroe-telefono-560.webp" srcSet="/heroe-telefono-320.webp 320w, /heroe-telefono-560.webp 560w"
-            sizes="(min-width: 900px) 300px, 240px" width="560" height="1155" decoding="async" fetchPriority="high"
-            alt="Camellapp en el celular: un servicio con su calificación, el maestro y el precio de referencia" />
-        </div>
+        <TarjetaHeroe servicio={top?.[0]} />
       </section>
 
       <section className="bloque" aria-labelledby="t-oficios">
@@ -129,7 +181,9 @@ export default function Inicio() {
         </ol>
       </section>
 
-      <Destacados />
+      <Vecinos />
+
+      <Destacados top={top?.slice(0, 3)} />
 
       <section className="bloque" aria-labelledby="t-confianza">
         <div className="bloque-cabeza"><h2 id="t-confianza">Por qué confiar</h2></div>
@@ -140,18 +194,29 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* La escena del pin cuenta esta oferta al pie de la letra: el pin con el barrio = «pedidos de tu zona»,
-          los oficios sobre la ruta = «tus servicios», la C que termina en el sol = «una reputación».
-          Va en la versión invertida del manual (blanco sobre terracota). Su sol es el punto sol de la banda,
-          por eso el titular de aquí no lleva otro (uno por composición). */}
+      {/* Banda para maestros y emprendedores (diseño del equipo, 24 nov). La tarjeta es una vista previa de SU perfil,
+          con lo que de verdad tendrá al empezar: insignia «Nuevo» y sin reseñas (no 5 estrellas ni «fotos»,
+          que la app todavía no permite subir). Decorativa para lectores de pantalla: el texto ya lo dice. */}
       <section className="banda-trabajador" aria-labelledby="t-trabajador">
-        <IlustracionHeroe className="banda-ilustracion" />
         <div className="banda-texto">
-          <h2 id="t-trabajador">¿Vives de tu oficio? Que tu camello hable por ti.</h2>
-          <p>Publica tus servicios gratis, recibe pedidos de tu zona y construye una reputación que te abre puertas.</p>
+          <p className="sobretitulo">Para maestros y emprendedores</p>
+          <h2 id="t-trabajador">Tu talento merece clientes<PuntoSol /></h2>
+          <p>Crea tu perfil gratis, publica tus servicios y deja que te encuentren en tu barrio. Cada trabajo bien hecho suma a tu reputación.</p>
           <Link to={usuario ? '/mi-perfil' : '/registro'} className="boton boton-claro">
-            <UserCheck aria-hidden="true" /> {usuario?.es_trabajador ? 'Ir a mi perfil' : 'Ofrecer mis servicios'}
+            <UserCheck aria-hidden="true" /> {usuario?.es_trabajador ? 'Ir a mi perfil' : 'Crear mi perfil'}
           </Link>
+        </div>
+        <div className="perfil-previa" aria-hidden="true">
+          <span className="heroe-tarjeta-persona">
+            <span className="avatar avatar-lg avatar-tu">TU</span>
+            <span className="pila-xs">
+              <strong className="perfil-previa-nombre">Tu nombre</strong>
+              <span className="texto-sm suave">Tu barrio, Malambo</span>
+            </span>
+          </span>
+          <span className="fila-flex"><span className="chip">Tu servicio</span><span className="chip">Otro servicio</span></span>
+          <span className="perfil-previa-hueco">Aquí llegan las reseñas de tus clientes</span>
+          <span className="fila-flex"><Nivel reputacion={{ nivel: 'Nuevo' }} /><span className="texto-sm suave">Sin reseñas aún</span></span>
         </div>
       </section>
 
