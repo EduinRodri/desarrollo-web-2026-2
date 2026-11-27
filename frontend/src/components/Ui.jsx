@@ -1,6 +1,7 @@
 // Componentes base del sistema de diseño de Camellapp.
 import { useId, useState } from 'react'
-import { AlertCircle, BadgeCheck, CheckCircle2, Eye, EyeOff, Info, RotateCw, Sparkles, Star, WifiOff } from 'lucide-react'
+import { AlertCircle, BadgeCheck, CheckCircle2, Eye, EyeOff, Info, RotateCw, Sparkles, Star } from 'lucide-react'
+import { Camello } from './Camello'
 
 const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
@@ -147,9 +148,9 @@ export function EstadoVacio({ ilustracion: Ilustracion, titulo, children, accion
 }
 
 // Sin señal: pasa seguido con datos móviles. Se dice qué pasó y se da la salida (reintentar), sin culpar.
-// Ícono de Lucide mientras llega la escena propia (programa visual, pieza E).
+// Escena propia (manual §10.5): el camello echado (espera), preocupado pero calmado, con el ícono de sin señal.
 function IconoSinConexion() {
-  return <span className="vacio-icono" aria-hidden="true"><WifiOff /></span>
+  return <Camello pose="echado" expresion="preocupado" senal={false} />
 }
 export function SinConexion({ onReintentar }) {
   return (

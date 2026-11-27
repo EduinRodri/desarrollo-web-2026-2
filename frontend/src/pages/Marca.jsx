@@ -1,7 +1,7 @@
 // Manual de marca navegable. Muestra el sistema VIVO: los colores y tipos salen de los mismos tokens que usa la app.
 import { Ban, Check } from 'lucide-react'
 import { Isotipo, Logo, PuntoSol } from '../components/Marca'
-import { IlustracionBusqueda, IlustracionPedidos, IlustracionPerdido } from '../components/Ilustraciones'
+import { Camello } from '../components/Camello'
 import { useTitulo } from '../hooks/useTitulo'
 
 const COLORES = [
@@ -126,10 +126,13 @@ export default function Marca() {
       <section className="bloque">
         <h2>7. Ilustración</h2>
         <p className="suave">Formas simples y redondeadas, máximo tres colores, espacio negativo y siempre un punto sol. Nada de stock ni de personas realistas. SVG con tokens: funcionan en modo oscuro.</p>
+        <h3 className="texto-sm">El camello</h3>
+        <p className="suave">Su joroba es la C del isotipo y termina en el punto sol; se para sobre el anillo de «estás aquí». De pie es acción; echado, espera. No habla, no reemplaza al pin y solo aparece en pantallas completas.</p>
         <div className="ilustraciones">
-          <div className="tarjeta"><IlustracionBusqueda /><span className="texto-xs suave">Búsqueda sin resultados</span></div>
-          <div className="tarjeta"><IlustracionPedidos /><span className="texto-xs suave">Sin pedidos</span></div>
-          <div className="tarjeta"><IlustracionPerdido /><span className="texto-xs suave">Página perdida</span></div>
+          <div className="tarjeta"><Camello expresion="contento" /><span className="texto-xs suave">Contento · primer uso</span></div>
+          <div className="tarjeta"><Camello pose="echado" expresion="buscando" /><span className="texto-xs suave">Buscando · lista vacía</span></div>
+          <div className="tarjeta"><Camello pose="echado" expresion="preocupado" senal={false} /><span className="texto-xs suave">Preocupado, calmado · sin conexión</span></div>
+          <div className="tarjeta"><Camello expresion="celebrando" /><span className="texto-xs suave">Celebrando · camello terminado</span></div>
         </div>
       </section>
 
