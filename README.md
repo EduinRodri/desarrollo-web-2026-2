@@ -7,6 +7,10 @@ Aplicación web para encontrar, contratar y calificar trabajadores de oficios pr
 
 **Equipo:** Eduin Rodríguez · Guillermo · Nicolás.
 
+**Documento de la Act. 4** (7 conceptos con ejemplos del código, APA 7): [Word](docs/entrega-act4/Web-Act4-Camellapp.docx) · [PDF](docs/entrega-act4/Web-Act4-Camellapp.pdf)
+
+**En línea:** [app](https://camellapp.vercel.app) · [API con Swagger](https://camellapp-api.vercel.app/docs)
+
 | Parte | Tecnología | Carpeta |
 |---|---|---|
 | Back-end (API REST + Swagger) | Python, FastAPI, SQLAlchemy, PostgreSQL (SQLite en local) | `backend/` |
@@ -21,7 +25,7 @@ Requiere [uv](https://docs.astral.sh/uv/).
 cd backend
 uv sync
 uv run uvicorn app.main:app --reload   # Swagger en http://localhost:8000/docs
-uv run pytest -v                       # 16 pruebas
+uv run pytest -v                       # 62 pruebas
 ```
 
 ## Correr el front-end en local
