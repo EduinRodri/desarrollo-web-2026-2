@@ -1,7 +1,7 @@
 // Componentes base del sistema de diseño de Camellapp.
 import { useId, useState } from 'react'
 import { AlertCircle, BadgeCheck, CheckCircle2, Eye, EyeOff, Info, RotateCw, Sparkles, Star } from 'lucide-react'
-import { Camello } from './Camello'
+import { CamelloSinSenal } from './Camello'
 
 const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
@@ -149,12 +149,9 @@ export function EstadoVacio({ ilustracion: Ilustracion, titulo, children, accion
 
 // Sin señal: pasa seguido con datos móviles. Se dice qué pasó y se da la salida (reintentar), sin culpar.
 // Escena propia (manual §10.5): el camello echado (espera), preocupado pero calmado, con el ícono de sin señal.
-function IconoSinConexion() {
-  return <Camello pose="echado" expresion="preocupado" senal={false} />
-}
 export function SinConexion({ onReintentar }) {
   return (
-    <EstadoVacio esPagina ilustracion={IconoSinConexion} titulo="Sin conexión"
+    <EstadoVacio esPagina ilustracion={CamelloSinSenal} titulo="Sin conexión"
       accion={<button type="button" className="boton" onClick={onReintentar}><RotateCw aria-hidden="true" /> Reintentar</button>}>
       No pudimos conectarnos con Camellapp. Revisa tus datos o el wifi e intenta de nuevo.
     </EstadoVacio>

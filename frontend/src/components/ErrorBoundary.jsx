@@ -2,7 +2,7 @@
 // (React solo permite capturar errores de render con un componente de clase.)
 import { Component } from 'react'
 import { RotateCw } from 'lucide-react'
-import { IlustracionPerdido } from './Ilustraciones'
+import { CamelloError } from './Camello'
 
 export default class ErrorBoundary extends Component {
   state = { error: null }
@@ -19,7 +19,7 @@ export default class ErrorBoundary extends Component {
     if (!this.state.error) return this.props.children
     return (
       <div className="vacio" role="alert">
-        <IlustracionPerdido />
+        <CamelloError />
         <h2>Algo no cargó bien</h2>
         <p>Puede ser la conexión o que acabamos de publicar una versión nueva. Recarga para seguir.</p>
         <button className="boton" onClick={() => window.location.reload()}>

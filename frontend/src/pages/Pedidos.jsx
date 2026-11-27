@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import DialogoConfirmacion from '../components/DialogoConfirmacion'
 import { Avatar, EstadoVacio, Estrellas, SelectorEstrellas } from '../components/Ui'
-import { IlustracionPedidos } from '../components/Ilustraciones'
+import { Camello, CamelloEsperando, CamelloPrimerUso } from '../components/Camello'
 import { useTitulo } from '../hooks/useTitulo'
 
 function pedidosReducer(estado, accion) {
@@ -112,6 +112,7 @@ export default function Pedidos() {
   const [como, setComo] = useState('cliente')
   const [estado, dispatch] = useReducer(pedidosReducer, { lista: [], cargando: true })
   const [confirmar, setConfirmar] = useState(null) // { pedido, accion }
+  const [celebrar, setCelebrar] = useState(null) // { id, nombre }: «Camello terminado», una sola vez, al publicar la reseña
 
   useEffect(() => {
     dispatch({ type: 'CARGANDO' })
@@ -146,7 +147,7 @@ export default function Pedidos() {
       {estado.cargando ? (
         <div className="pila" aria-busy="true">{[1, 2].map((i) => <div key={i} className="tarjeta"><div className="esqueleto" style={{ height: 120 }} /></div>)}</div>
       ) : estado.lista.length === 0 ? (
-        <EstadoVacio ilustracion={IlustracionPedidos}
+        <EstadoVacio ilustracion={como === 'cliente' ? CamelloPrimerUso : CamelloEsperando}
           titulo={como === 'cliente' ? 'Todavía no has pedido nada' : 'Aún no te han pedido servicios'}
           accion={como === 'cliente' && <Link to="/buscar" className="boton"><Search aria-hidden="true" /> Buscar un servicio</Link>}>
           {como === 'cliente' ? 'Cuando pidas un servicio, aquí verás cómo va.' : 'Cuando un cliente te pida, te aparecerá aquí para aceptarlo.'}
@@ -179,12 +180,22 @@ export default function Pedidos() {
                     )
                   })}
                 </div>
+                {celebrar?.id === p.id && (
+                  // Pico-final (Kahneman): el cierre del pedido se celebra, una vez. Manual §10.5: «Camello terminado».
+                  <div className="celebracion" role="status">
+                    <Camello expresion="celebrando" className="celebracion-camello" />
+                    <div>
+                      <strong>¡Camello terminado!</strong>
+                      <p className="texto-sm suave">Gracias. Tu reseña ya ayuda a {celebrar.nombre} y a tus vecinos.</p>
+                    </div>
+                  </div>
+                )}
                 {p.estrellas ? (
                   <div className="fila-flex texto-sm"><Estrellas valor={p.estrellas} /> <span className="suave">«{p.comentario}»</span></div>
                 ) : como === 'cliente' && p.estado === 'terminado' ? (
                   <FormResena pedido={p} alGuardar={(data, nombre) => {
                     dispatch({ type: 'ACTUALIZADO', pedido: data })
-                    avisar(`¡Gracias! Tu reseña ya ayuda a ${nombre}.`)
+                    setCelebrar({ id: p.id, nombre })
                   }} />
                 ) : null}
               </li>

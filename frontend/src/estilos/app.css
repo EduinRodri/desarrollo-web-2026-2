@@ -357,6 +357,14 @@ dialog p { color: var(--color-texto-suave); margin-top: var(--esp-2); }
 .vacio-icono { display: grid; place-items: center; width: 96px; height: 96px; margin-bottom: var(--esp-2); border-radius: 999px; background: var(--color-accion-suave); color: var(--color-accion-texto); }
 .vacio-icono svg { width: 40px; height: 40px; }
 
+/* «Camello terminado» (manual §10.3 y §10.5): una animación focal, ≤ 1 s, solo transform/opacity, una vez; sin ella con «reducir movimiento» */
+.celebracion { display: flex; align-items: center; gap: var(--esp-3); padding: var(--esp-3); border-radius: 12px; background: var(--color-accion-suave); }
+.celebracion strong { font-size: var(--texto-lg); line-height: var(--linea-lg); }
+.celebracion p { margin: 0; }
+.celebracion-camello { width: 96px; height: 96px; flex-shrink: 0; transform-origin: 50% 90%; animation: camello-salta 600ms cubic-bezier(0.2, 0, 0, 1) both; }
+@keyframes camello-salta { 0% { transform: translateY(6px) scale(0.92); opacity: 0; } 60% { transform: translateY(-4px) scale(1.02); opacity: 1; } 100% { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .celebracion-camello { animation: none; } }
+
 /* ---------- Mi perfil ---------- */
 .columnas { display: grid; gap: var(--esp-4); grid-template-columns: 1fr; align-items: start; }
 @media (min-width: 900px) { .columnas { grid-template-columns: 1fr 1fr; gap: var(--esp-6); } }

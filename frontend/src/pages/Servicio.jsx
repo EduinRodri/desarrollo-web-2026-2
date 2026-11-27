@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { useTitulo } from '../hooks/useTitulo'
 import { Aviso, Avatar, Calificacion, EstadoVacio, Estrellas, Nivel, SinConexion } from '../components/Ui'
-import { IlustracionPerdido } from '../components/Ilustraciones'
+import { CamelloEsperando } from '../components/Camello'
 
 function Esqueleto() {
   return (
@@ -72,7 +72,7 @@ export default function Servicio() {
 
   if (fallo === 'sin-conexion') return <SinConexion onReintentar={() => setIntento((n) => n + 1)} />
   if (fallo === 'no-existe') {
-    return <EstadoVacio esPagina ilustracion={IlustracionPerdido} titulo="No encontramos este servicio"
+    return <EstadoVacio esPagina ilustracion={CamelloEsperando} titulo="No encontramos este servicio"
       accion={<Link to="/buscar" className="boton">Buscar otros servicios</Link>}>
       Puede que el maestro lo haya pausado o que el enlace esté mal escrito.
     </EstadoVacio>

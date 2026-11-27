@@ -77,6 +77,12 @@ function Echado({ expresion, senal }) {
   )
 }
 
+// Escenas listas para EstadoVacio (manual §10.5: una situación, una escena).
+export const CamelloPrimerUso = () => <Camello pose="pie" expresion="contento" />            // cliente sin pedidos
+export const CamelloEsperando = () => <Camello pose="echado" expresion="buscando" />         // maestro sin pedidos · no encontrado · 404
+export const CamelloError = () => <Camello pose="echado" expresion="preocupado" />           // la pantalla falló
+export const CamelloSinSenal = () => <Camello pose="echado" expresion="preocupado" senal={false} />
+
 /**
  * @param {'pie'|'echado'} pose
  * @param {'contento'|'buscando'|'preocupado'|'celebrando'} expresion

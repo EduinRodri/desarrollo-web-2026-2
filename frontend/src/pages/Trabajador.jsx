@@ -8,7 +8,7 @@ import api, { esNoEncontrado } from '../api'
 import TarjetaServicio from '../components/TarjetaServicio'
 import { useTitulo } from '../hooks/useTitulo'
 import { Avatar, EstadoVacio, Estrellas, MIN_RESENAS_PROMEDIO, Nivel, SinConexion } from '../components/Ui'
-import { IlustracionPerdido } from '../components/Ilustraciones'
+import { CamelloEsperando } from '../components/Camello'
 
 const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
@@ -30,7 +30,7 @@ export default function Trabajador() {
 
   if (fallo === 'sin-conexion') return <SinConexion onReintentar={() => setIntento((n) => n + 1)} />
   if (fallo === 'no-existe') {
-    return <EstadoVacio esPagina ilustracion={IlustracionPerdido} titulo="No encontramos este perfil"
+    return <EstadoVacio esPagina ilustracion={CamelloEsperando} titulo="No encontramos este perfil"
       accion={<Link to="/buscar" className="boton">Buscar trabajadores</Link>}>
       Puede que el enlace esté mal escrito o que la cuenta ya no exista.
     </EstadoVacio>
