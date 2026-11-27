@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camello · personaje (laboratorio)</title>
+<!-- Fase 2, pieza 1, construcción (vuelta 1). Direcciones elegidas por Eduin el 27 nov: 1 (maciza, de pie) y 4 (echado),
+     como DOS POSES DEL MISMO personaje: la joroba, el cuello, la cabeza, el ojo y el sol son las mismas piezas.
+     Retícula 20 × 20 u (u = 8 px a 160 px), coordenadas en pasos de 0,25 u. No lo usa la app. -->
+<style>
+  :root { --color-fondo:#F7F3EC; --color-superficie:#FFFFFF; --color-accion:#A93F1D; --color-borde:#ece6dc; --sol-500:#F5B300; }
+  .oscuro { --color-fondo:#1B1714; --color-superficie:#1B1714; --color-accion:#E9997A; --color-borde:#3a332d; }
+  .silueta { --color-accion:#000; --color-superficie:#000; --color-borde:#000; --sol-500:#000; }
+  body { margin:0; padding:24px 16px; font:14px/1.4 system-ui,sans-serif; background:#fff; color:#1B1714; }
+  h1 { font-size:20px; margin:0 0 4px; } h2 { font-size:15px; margin:18px 0 6px; } p { margin:0 0 6px; max-width:72ch; }
+  .fila { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-end; }
+  .panel { padding:12px; border-radius:12px; background:var(--color-fondo); display:flex; gap:12px; align-items:flex-end; }
+  figure { margin:0; text-align:center; } figcaption { font-size:12px; color:#6b5f55; }
+  svg { display:block; }
+  .m { fill:var(--color-accion); }
+  .t { fill:none; stroke:var(--color-accion); stroke-linecap:round; stroke-linejoin:round; }
+  .s { fill:var(--sol-500); } .o { fill:var(--color-superficie); } .b { fill:var(--color-borde); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <!-- Cabeza común: rectángulo redondeado 4,25 × 2,5 u, oreja semicírculo r 0,6, ojo r 0,45 hacia el hocico -->
+  <g id="cabeza">
+    <rect class="m" x="0" y="0" width="4.25" height="2.5" rx="1.25"/>
+    <path class="m" d="M0.4 0.15a0.6 0.6 0 0 1 1.2 0z"/>
+    <circle class="o" cx="2.5" cy="0.85" r="0.45"/>
+  </g>
+
+  <!-- ===== DE PIE ===== cuerpo 10 × 4,5 u; joroba de radio 3,25 u y trazo 2 u; patas 1,5 u; cuello 2,25 u -->
+  <g id="pie-base">
+    <rect class="b" x="3" y="18.5" width="12" height="0.75" rx="0.375"/>
+    <path class="t" stroke-width="0.5" d="M3.75 10.5Q2.75 11.25 3 13"/>
+    <path class="t" stroke-width="1.5" d="M5 12.5V18M7 12.5V17.75M11 12.5V18M12.75 12.5V17.75"/>
+    <rect class="m" x="3.5" y="8.75" width="10" height="4.5" rx="2.25"/>
+    <path class="t" stroke-width="2.25" d="M12.5 10.5Q16 12.5 16.25 7.25"/>
+    <use href="#cabeza" x="15" y="5.25"/>
+  </g>
+  <!-- A: joroba en arco ∩ (180° → 0°) con el sol a 45° sobre el arco -->
+  <symbol id="pie-arco" viewBox="0 0 20 20"><use href="#pie-base"/>
+    <path class="t" stroke-width="2" d="M5.25 9A3.25 3.25 0 0 1 11.75 9"/><circle class="s" cx="10.8" cy="6.7" r="1.35"/></symbol>
+  <!-- B: joroba como la C del logo: arranca en el lomo (180°) y TERMINA a 45° con el sol encima; abre hacia el cuello -->
+  <symbol id="pie-c" viewBox="0 0 20 20"><use href="#pie-base"/>
+    <path class="t" stroke-width="2" d="M5.25 9A3.25 3.25 0 0 1 10.8 6.7"/><circle class="s" cx="10.8" cy="6.7" r="1.35"/></symbol>
+
+  <!-- ===== ECHADO ===== mismo cuerpo alargado y bajado; patas dobladas; misma joroba, cuello y cabeza -->
+  <g id="echado-base">
+    <rect class="b" x="2.5" y="17.25" width="14" height="0.75" rx="0.375"/>
+    <path class="t" stroke-width="0.5" d="M3.25 12.75Q2.25 13.25 2.5 15"/>
+    <rect class="m" x="3.5" y="15.25" width="4" height="1.75" rx="0.875"/>
+    <rect class="m" x="9.5" y="15.25" width="4" height="1.75" rx="0.875"/>
+    <rect class="m" x="2.75" y="11.25" width="11.5" height="5" rx="2.5"/>
+    <path class="t" stroke-width="2.25" d="M13.5 13Q17 14.25 17 9.75"/>
+    <use href="#cabeza" x="15.75" y="7.75"/>
+  </g>
+  <symbol id="echado-arco" viewBox="0 0 20 20"><use href="#echado-base"/>
+    <path class="t" stroke-width="2" d="M4.75 11.5A3.25 3.25 0 0 1 11.25 11.5"/><circle class="s" cx="10.3" cy="9.2" r="1.35"/></symbol>
+  <symbol id="echado-c" viewBox="0 0 20 20"><use href="#echado-base"/>
+    <path class="t" stroke-width="2" d="M4.75 11.5A3.25 3.25 0 0 1 10.3 9.2"/><circle class="s" cx="10.3" cy="9.2" r="1.35"/></symbol>
+
+  <!-- ===== VUELTA 2 · ECHADO corregido (joroba B) =====
+       Antes parecía caparazón de tortuga: cuerpo largo y bajo con la joroba aplastada.
+       Ahora: cuerpo más corto (10 u) y más alto (5,75 u), joroba 1,25 u más arriba, cuello que sube
+       hasta dejar la cabeza a la altura de la joroba y rodillas dobladas que asoman adelante. -->
+  <symbol id="echado-v2" viewBox="0 0 20 20">
+    <rect class="b" x="2.75" y="17.25" width="13.5" height="0.75" rx="0.375"/>
+    <path class="t" stroke-width="0.5" d="M3.75 11.75Q2.75 12.25 3 14"/>
+    <rect class="m" x="4" y="15.25" width="3.75" height="1.75" rx="0.875"/>
+    <rect class="m" x="10" y="15.25" width="4" height="1.75" rx="0.875"/>
+    <rect class="m" x="3.5" y="10.5" width="10" height="5.75" rx="2.875"/>
+    <path class="t" stroke-width="2.25" d="M13 12.5Q16.75 13.5 16.75 8.75"/>
+    <use href="#cabeza" x="15.5" y="6.75"/>
+    <path class="t" stroke-width="2" d="M5.25 10.75A3.25 3.25 0 0 1 10.8 8.45"/>
+    <circle class="s" cx="10.8" cy="8.45" r="1.35"/>
+  </symbol>
+</defs></svg>
+
+<h1>Camello · vuelta 2 (joroba B, elegida por Eduin)</h1>
+<p>De pie sin cambios. <strong>Echado corregido:</strong> cuerpo más corto y alto, joroba más arriba, cabeza a la altura de la joroba.</p>
+<h2>Silueta 160 px · de pie, echado vuelta 1, echado vuelta 2</h2>
+<div class="fila silueta">
+  <figure><svg width="160" height="160"><use href="#pie-c"/></svg><figcaption>De pie</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#echado-c"/></svg><figcaption>Echado v1 (tortuga)</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#echado-v2"/></svg><figcaption>Echado v2</figcaption></figure>
+</div>
+<h2>64 px</h2>
+<div class="fila silueta">
+  <figure><svg width="64" height="64"><use href="#pie-c"/></svg><figcaption>De pie</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#echado-v2"/></svg><figcaption>Echado v2</figcaption></figure>
+</div>
+<h2>Color, claro y oscuro</h2>
+<div class="fila">
+  <div class="panel"><svg width="160" height="160"><use href="#pie-c"/></svg><svg width="160" height="160"><use href="#echado-v2"/></svg></div>
+  <div class="panel oscuro"><svg width="160" height="160"><use href="#pie-c"/></svg><svg width="160" height="160"><use href="#echado-v2"/></svg></div>
+</div>
+<hr style="margin:28px 0">
+<h1>Vuelta 1 (referencia)</h1>
+<p>Un solo personaje en dos poses (direcciones 1 y 4). Se prueban dos jorobas: <strong>A</strong> arco ∩ y <strong>B</strong> C abierta al frente,
+que termina en el sol como el isotipo. Silueta a 160 y 64 px; color en claro y oscuro.</p>
+
+<h2>Silueta · A arco (de pie, echado) · B C al frente (de pie, echado)</h2>
+<div class="fila silueta">
+  <figure><svg width="160" height="160"><use href="#pie-arco"/></svg><figcaption>A de pie</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#echado-arco"/></svg><figcaption>A echado</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#pie-c"/></svg><figcaption>B de pie</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#echado-c"/></svg><figcaption>B echado</figcaption></figure>
+</div>
+<h2>A 64 px</h2>
+<div class="fila silueta">
+  <figure><svg width="64" height="64"><use href="#pie-arco"/></svg><figcaption>A</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#echado-arco"/></svg><figcaption>A</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#pie-c"/></svg><figcaption>B</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#echado-c"/></svg><figcaption>B</figcaption></figure>
+</div>
+<h2>Color, claro y oscuro</h2>
+<div class="fila">
+  <div class="panel"><svg width="130" height="130"><use href="#pie-arco"/></svg><svg width="130" height="130"><use href="#echado-arco"/></svg><svg width="130" height="130"><use href="#pie-c"/></svg><svg width="130" height="130"><use href="#echado-c"/></svg></div>
+  <div class="panel oscuro"><svg width="130" height="130"><use href="#pie-arco"/></svg><svg width="130" height="130"><use href="#echado-arco"/></svg><svg width="130" height="130"><use href="#pie-c"/></svg><svg width="130" height="130"><use href="#echado-c"/></svg></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camello · ubicación (laboratorio)</title>
+<!-- Fase 2, pieza 1: Eduin pidió que el camello lleve la idea de ubicación («camello cerca»). 3 formas, mismo camello aprobado (de pie, joroba B).
+     El pin del logo no se reemplaza ni se pone junto al camello como logo: aquí el pin es parte de la escena (un marcador de mapa). No lo usa la app. -->
+<style>
+  :root { --color-fondo:#F7F3EC; --color-superficie:#FFFFFF; --color-accion:#A93F1D; --color-accion-suave:#f9e2d6; --color-borde:#ece6dc; --sol-500:#F5B300; }
+  .oscuro { --color-fondo:#1B1714; --color-superficie:#1B1714; --color-accion:#E9997A; --color-accion-suave:#3a1d12; --color-borde:#3a332d; }
+  .silueta { --color-accion:#000; --color-accion-suave:#fff; --color-superficie:#000; --color-borde:#000; --sol-500:#000; }
+  body { margin:0; padding:24px 16px; font:14px/1.4 system-ui,sans-serif; background:#fff; color:#1B1714; }
+  h1 { font-size:20px; margin:0 0 4px; } h2 { font-size:15px; margin:18px 0 6px; } p { margin:0 0 6px; max-width:72ch; }
+  .fila { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-end; }
+  .panel { padding:12px; border-radius:12px; background:var(--color-fondo); display:flex; gap:16px; align-items:flex-end; }
+  figure { margin:0; text-align:center; } figcaption { font-size:12px; color:#6b5f55; }
+  svg { display:block; }
+  .m { fill:var(--color-accion); } .ms { fill:var(--color-accion-suave); }
+  .t { fill:none; stroke:var(--color-accion); stroke-linecap:round; stroke-linejoin:round; }
+  .s { fill:var(--sol-500); } .o { fill:var(--color-superficie); } .b { fill:var(--color-borde); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <!-- El camello aprobado (de pie, joroba B), sin sombra -->
+  <g id="camello">
+    <path class="t" stroke-width="0.5" d="M3.75 10.5Q2.75 11.25 3 13"/>
+    <path class="t" stroke-width="1.5" d="M5 12.5V18M7 12.5V17.75M11 12.5V18M12.75 12.5V17.75"/>
+    <rect class="m" x="3.5" y="8.75" width="10" height="4.5" rx="2.25"/>
+    <path class="t" stroke-width="2.25" d="M12.5 10.5Q16 12.5 16.25 7.25"/>
+    <rect class="m" x="15" y="5.25" width="4.25" height="2.5" rx="1.25"/>
+    <path class="m" d="M15.4 5.4a0.6 0.6 0 0 1 1.2 0z"/>
+    <circle class="o" cx="17.5" cy="6.1" r="0.45"/>
+    <path class="t" stroke-width="2" d="M5.25 9A3.25 3.25 0 0 1 10.8 6.7"/>
+    <circle class="s" cx="10.8" cy="6.7" r="1.35"/>
+  </g>
+
+  <!-- U1 · «Aquí estoy»: la sombra se vuelve el punto de ubicación del mapa (anillo de «estás aquí») -->
+  <symbol id="u1" viewBox="0 0 20 20">
+    <ellipse cx="8.75" cy="18.5" rx="7" ry="1.25" class="t" stroke-width="0.5"/>
+    <ellipse cx="8.75" cy="18.5" rx="4.5" ry="0.75" class="ms"/>
+    <use href="#camello"/>
+  </symbol>
+
+  <!-- U2 · «Va para allá»: una ruta punteada que llega a un marcador de mapa cerca, delante del camello -->
+  <symbol id="u2" viewBox="0 0 24 20">
+    <path class="t" stroke-width="0.5" stroke-dasharray="0.01 1.25" d="M1.5 18.75H19.5"/>
+    <use href="#camello"/>
+    <path class="m" d="M21.25 18.5C19.75 16.75 19.25 15.5 19.25 14.25A2 2 0 0 1 23.25 14.25C23.25 15.5 22.75 16.75 21.25 18.5Z"/>
+    <circle class="o" cx="21.25" cy="14.25" r="0.75"/>
+  </symbol>
+
+  <!-- U3 · «Dentro del pin»: el camello dentro de un marcador grande, como la ventana del isotipo (para escenas de página completa) -->
+  <symbol id="u3" viewBox="0 0 24 26">
+    <path class="ms" d="M12 25.25C7 19.75 2 16.5 2 11A10 10 0 0 1 22 11C22 16.5 17 19.75 12 25.25Z"/>
+    <path class="t" stroke-width="0.75" d="M12 25.25C7 19.75 2 16.5 2 11A10 10 0 0 1 22 11C22 16.5 17 19.75 12 25.25Z"/>
+    <g transform="translate(12 11.5) scale(0.82) translate(-10.9 -11.75)"><use href="#camello"/></g>
+  </symbol>
+</defs></svg>
+
+<h1>Camello + ubicación: 3 formas</h1>
+<p><strong>U1 · Aquí estoy:</strong> la sombra es el punto de «estás aquí» del mapa. <strong>U2 · Va para allá:</strong> ruta punteada hasta un marcador cerca.
+<strong>U3 · Dentro del pin:</strong> el camello dentro de un marcador, como la ventana del isotipo. En las tres hay un solo sol (el de la joroba).</p>
+
+<h2>Color, 160 px de alto</h2>
+<div class="fila">
+  <div class="panel">
+    <figure><svg width="160" height="160"><use href="#u1"/></svg><figcaption>U1</figcaption></figure>
+    <figure><svg width="192" height="160"><use href="#u2"/></svg><figcaption>U2</figcaption></figure>
+    <figure><svg width="148" height="160"><use href="#u3"/></svg><figcaption>U3</figcaption></figure>
+  </div>
+  <div class="panel oscuro">
+    <figure><svg width="160" height="160"><use href="#u1"/></svg><figcaption>U1</figcaption></figure>
+    <figure><svg width="192" height="160"><use href="#u2"/></svg><figcaption>U2</figcaption></figure>
+    <figure><svg width="148" height="160"><use href="#u3"/></svg><figcaption>U3</figcaption></figure>
+  </div>
+</div>
+<h2>A 64 px de alto</h2>
+<div class="fila panel">
+  <svg width="64" height="64"><use href="#u1"/></svg>
+  <svg width="77" height="64"><use href="#u2"/></svg>
+  <svg width="59" height="64"><use href="#u3"/></svg>
+</div>
+</body>
+</html>

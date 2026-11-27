@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camello · siluetas (laboratorio)</title>
+<!--
+  Laboratorio de la fase 2 (no lo usa la app). Construido con docs/marca.md §10.6:
+  mesa de 20 × 20 u (u = 8 px a 160 px). La C es la del isotipo escalada (trazo = 0,56 × radio).
+  Para abrirlo: doble clic en este archivo.
+-->
+<style>
+  :root {
+    --color-fondo: #F7F3EC; --color-superficie: #FFFFFF; --color-texto: #1B1714;
+    --color-accion: #A93F1D; --color-accion-suave: #fdf4ef; --color-borde: #ece6dc; --sol-500: #F5B300;
+  }
+  .oscuro {
+    --color-fondo: #1B1714; --color-superficie: #1B1714; --color-texto: #F7F3EC;
+    --color-accion: #E9997A; --color-accion-suave: #3a1d12; --color-borde: #3a332d;
+    background: var(--color-fondo); color: var(--color-texto);
+  }
+  .silueta { --color-accion: #000; --color-accion-suave: #000; --color-superficie: #000; --color-borde: #000; --sol-500: #000; }
+  body { margin: 0; padding: 24px 16px; font: 14px/1.4 system-ui, sans-serif; background: #fff; color: #1B1714; }
+  h1 { font-size: 20px; margin: 0 0 4px; } h2 { font-size: 16px; margin: 24px 0 8px; }
+  p { margin: 0 0 8px; max-width: 70ch; }
+  .fila { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; }
+  figure { margin: 0; text-align: center; } figcaption { font-size: 12px; color: #6b5f55; margin-top: 4px; }
+  .panel { padding: 16px; border-radius: 12px; background: var(--color-fondo); }
+  .oscuro figcaption { color: #b8ab9f; }
+  svg { display: block; }
+  .cuerpo { fill: none; stroke: var(--color-accion); stroke-linecap: round; }
+  .relleno { fill: var(--color-accion-suave); }
+  .macizo { fill: var(--color-accion); }
+  .pata { stroke: var(--color-accion); stroke-linecap: round; }
+  .sol { fill: var(--sol-500); }
+  .ojo { fill: var(--color-superficie); }
+  .sombra { fill: var(--color-borde); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Piezas comunes (coordenadas en u) -->
+    <!-- Vuelta 2: perfil de dromedario. La joroba (arriba de la C) es el punto más alto;
+         el cuello baja hacia adelante y sube en curva; la cabeza queda por debajo de la joroba. -->
+    <g id="cabeza">
+      <path class="cuerpo" stroke-width="1.75" d="M10.83 11.33Q15.5 12.75 15.5 8.25"/> <!-- cuello en U -->
+      <rect class="macizo" x="14.5" y="6.5" width="4.25" height="2.25" rx="1.125"/>    <!-- cabeza alargada -->
+      <path class="macizo" d="M14.7 6.7a0.6 0.6 0 0 1 1.2 0z"/>                         <!-- oreja -->
+      <circle class="ojo" cx="16.5" cy="7.35" r="0.45"/>
+    </g>
+    <path id="c" class="cuerpo" stroke-width="2.25" d="M10.83 5.67A4 4 0 1 0 10.83 11.33"/>
+    <circle id="sol" class="sol" cx="11.36" cy="5.14" r="1.5"/>
+    <g id="patas4">
+      <line class="pata" x1="5" y1="12.5" x2="5" y2="18" stroke-width="1"/>
+      <line class="pata" x1="6.75" y1="12.75" x2="6.75" y2="18" stroke-width="1"/>
+      <line class="pata" x1="10" y1="12.25" x2="10" y2="18" stroke-width="1"/>
+      <line class="pata" x1="11.75" y1="12.25" x2="11.75" y2="18" stroke-width="1"/>
+    </g>
+    <g id="patas2">
+      <line class="pata" x1="5.75" y1="12.5" x2="5.75" y2="18" stroke-width="1.25"/>
+      <line class="pata" x1="10.75" y1="12.25" x2="10.75" y2="18" stroke-width="1.25"/>
+    </g>
+    <rect id="sombra" class="sombra" x="2.5" y="18.75" width="12" height="0.75" rx="0.375"/>
+
+    <!-- Variante A: C hueca -->
+    <symbol id="hueca-completa" viewBox="0 0 20 20"><use href="#sombra"/><use href="#patas4"/><use href="#c"/><use href="#cabeza"/><use href="#sol"/></symbol>
+    <symbol id="hueca-reducida" viewBox="0 0 20 20"><use href="#patas2"/><use href="#c"/><use href="#cabeza"/><use href="#sol"/></symbol>
+
+    <!-- Vuelta 3 · Variante A+: la C hueca es solo la joroba; debajo, un torso horizontal macizo
+         (el lomo largo que tiene un camello y que la C sola no da) y una cola con el trazo único de 0,5 u. -->
+    <rect id="torso" class="macizo" x="4" y="10.5" width="8.5" height="2.75" rx="1.375"/>
+    <path id="cola" class="cuerpo" stroke-width="0.5" d="M4.25 11.25Q3 11.75 3.25 13.75"/>
+    <symbol id="torso-completa" viewBox="0 0 20 20"><use href="#sombra"/><use href="#patas4"/><use href="#cola"/><use href="#torso"/><use href="#c"/><use href="#cabeza"/><use href="#sol"/></symbol>
+    <symbol id="torso-reducida" viewBox="0 0 20 20"><use href="#patas2"/><use href="#torso"/><use href="#c"/><use href="#cabeza"/><use href="#sol"/></symbol>
+
+    <!-- Variante B: C sobre cuerpo relleno -->
+    <circle id="vientre" class="relleno" cx="8" cy="8.5" r="4"/>
+    <symbol id="rellena-completa" viewBox="0 0 20 20"><use href="#sombra"/><use href="#patas4"/><use href="#vientre"/><use href="#c"/><use href="#cabeza"/><use href="#sol"/></symbol>
+    <symbol id="rellena-reducida" viewBox="0 0 20 20"><use href="#patas2"/><use href="#vientre"/><use href="#c"/><use href="#cabeza"/><use href="#sol"/></symbol>
+  </defs>
+</svg>
+
+<h1>Camello: siluetas para la prueba con vecinos</h1>
+<p>Fase 2, pieza 1, vuelta 3. Retícula de §10.6 (20 × 20 u). ≥ 160 px completa; 64-96 px reducida (sin sombra ni cola, 2 patas).
+<strong>Por debajo de 64 px no hay camello: va el pin</strong> (el busto de 48 px no se leía). Criterio: gana la variante que ≥ 4 de 5 vecinos llamen «camello» o «dromedario» a 64 px.</p>
+
+<h2>A · C hueca sola (vuelta 2)</h2>
+<div class="fila silueta">
+  <figure><svg width="160" height="160"><use href="#hueca-completa"/></svg><figcaption>160 px</figcaption></figure>
+  <figure><svg width="96" height="96"><use href="#hueca-reducida"/></svg><figcaption>96 px</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#hueca-reducida"/></svg><figcaption>64 px</figcaption></figure>
+</div>
+
+<h2>A+ · C hueca como joroba + torso (vuelta 3)</h2>
+<div class="fila silueta">
+  <figure><svg width="160" height="160"><use href="#torso-completa"/></svg><figcaption>160 px</figcaption></figure>
+  <figure><svg width="96" height="96"><use href="#torso-reducida"/></svg><figcaption>96 px</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#torso-reducida"/></svg><figcaption>64 px</figcaption></figure>
+</div>
+
+<h2>B · C sobre cuerpo relleno</h2>
+<div class="fila silueta">
+  <figure><svg width="160" height="160"><use href="#rellena-completa"/></svg><figcaption>160 px</figcaption></figure>
+  <figure><svg width="96" height="96"><use href="#rellena-reducida"/></svg><figcaption>96 px</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#rellena-reducida"/></svg><figcaption>64 px</figcaption></figure>
+</div>
+
+<h2>En color (claro y oscuro), 160 px</h2>
+<div class="fila">
+  <div class="panel fila">
+    <figure><svg width="160" height="160"><use href="#hueca-completa"/></svg><figcaption>A · claro</figcaption></figure>
+    <figure><svg width="160" height="160"><use href="#torso-completa"/></svg><figcaption>A+ · claro</figcaption></figure>
+  </div>
+  <div class="panel fila oscuro">
+    <figure><svg width="160" height="160"><use href="#hueca-completa"/></svg><figcaption>A · oscuro</figcaption></figure>
+    <figure><svg width="160" height="160"><use href="#torso-completa"/></svg><figcaption>A+ · oscuro</figcaption></figure>
+  </div>
+</div>
+</body>
+</html>

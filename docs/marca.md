@@ -153,21 +153,31 @@ regla propia que se valida con la prueba con vecinos (§10.7). Unidad: **u = 8 p
 
 ### 10.6 Mascota: hoja de personaje del camello
 **Reglas de uso.** Nunca reemplaza al pin ni va en el encabezado, el favicon, el ícono de la app o junto al logo [GitHub]. **No habla:** sin
-bocadillos ni firma de textos [Mailchimp, no verificado]. Tamaño mínimo **48 px**; por debajo, el isotipo. **Sin nombre por ahora:** se les
+bocadillos ni firma de textos [Mailchimp, no verificado]. Tamaño mínimo **64 px**; por debajo, el isotipo. **Sin nombre por ahora:** se les
 pregunta a los vecinos en la prueba. Nada se publica sin la prueba de §10.7.
 
-**Construcción** (mesa de 160 px = 20 × 20 u, mirando a la derecha). Medido en `Marca.jsx`: trazo de la C = 0,56 × su radio; abre 90° entre −45° y +45°;
-punto sol de 0,4 × radio, a 45° arriba a la derecha y a 1,2 radios del centro.
-1. **Joroba y cuerpo = la C del isotipo escalada:** centro (8, 9) u, radio 4 u, trazo 2,25 u, extremos redondeados, `--color-accion`. Arco de arriba = joroba; izquierdo = grupa; de abajo = panza; abertura hacia el pecho.
-   **Variante elegida en principio: C hueca** (interior vacío, como la ventana del logo). Se dibuja también la C sobre cuerpo relleno, solo como silueta, y **gana la hueca si ≥ 4 de 5 vecinos la reconocen como camello a 64 px**.
-2. **Punto sol:** r 1,5 u en (11,4; 5,6) u, **montado sobre el extremo superior del trazo**, nunca suelto (sobre la arena solo da 1,68:1).
-3. **Cuello:** píldora de 1,75 u que sale del extremo inferior de la C, en (10,8; 11,8), y sube a 60°.
-4. **Cabeza:** rectángulo redondeado de 3,5 × 2,5 u (radio 1,25 u), centro (16; 4,5); a ≥ 1 u del sol. **Oreja:** semicírculo r 0,6 u. **Ojo:** círculo r 0,5 u en `--color-superficie`.
-5. **Patas:** 4 píldoras de 1 × 5 u (y = 13 a 18) en x = 5; 6,75; 10; 11,75; las de atrás 0,25 u más cortas. **Sombra:** píldora de 12 × 1 u en y = 18,5, `--color-borde`.
-6. **Herramienta en la pata delantera** (levantada 15°), no dentro de la C, que compite con el sol: el ícono Lucide del oficio redibujado con el trazo de la escena, máximo 4 × 4 u.
+**Construcción aprobada por Eduin (27 nov, fase 2).** Fuente: `frontend/marca/camello/personaje.html` (laboratorio; la app aún no lo usa).
+Mesa de 160 px = 20 × 20 u, mirando a la derecha, coordenadas en pasos de 0,25 u. **Un personaje, dos poses** (de pie y echado) con las mismas piezas.
+*Historia:* la primera hoja (la C como todo el cuerpo, con patas de palito) se probó en 3 vueltas y salía jirafa, «C con gancho» u oveja; se hizo la
+exploración de 4 direcciones y Eduin eligió la **maciza** (de pie) y la **echada**.
+1. **Cuerpo macizo** (no anillo): de pie, rectángulo redondeado de 10 × 4,5 u en (3,5; 8,75); echado, 10 × 5,75 u en (3,5; 10,5). `--color-accion`.
+2. **Joroba = la C del isotipo abierta al frente:** arco de radio 3,25 u y trazo 2 u que **arranca en el lomo (180°) y termina a 45° arriba a la derecha**,
+   abierto hacia el cuello, como la C del logo. El hueco entre el arco y el lomo es la «ventana».
+3. **Punto sol** r 1,35 u **montado sobre el extremo del arco** (de pie: 10,8; 6,7 · echado: 10,8; 8,45). Nunca suelto (sobre la arena solo da 1,68:1).
+4. **Cuello en U** de 2,25 u: sale del pecho, baja hacia adelante y sube. La cabeza queda **más baja que la joroba** de pie y a su altura echado.
+5. **Cabeza:** rectángulo redondeado de 4,25 × 2,5 u (radio 1,25 u). **Oreja:** semicírculo r 0,6 u atrás. **Ojo:** círculo r 0,45 u hacia el hocico, en `--color-superficie`.
+6. **Patas:** de pie, 4 píldoras de 1,5 u (x = 5; 7; 11; 12,75; de y = 12,5 a 18); echado, 2 píldoras dobladas de 1,75 u de alto bajo el cuerpo.
+   **Cola:** el trazo único de 0,5 u.
+   **Sombra = «estás aquí» (decisión de Eduin, 27 nov):** en vez de una sombra plana, el camello se para sobre el punto de ubicación de un mapa:
+   un anillo (elipse de 7 × 1,25 u, trazo 0,5 u, `--color-accion`) y adentro una elipse de 4,5 × 0,75 u en `--color-accion-suave`. Es lo que dice
+   **«cerca de ti»** sin poner un segundo pin. Va en todas las poses y en todos los tamaños. Fuente: `frontend/marca/camello/ubicacion.html` (U1).
+7. **Herramienta en la pata delantera** (levantada 15°), no dentro de la ventana, que compite con el sol: el ícono Lucide del oficio redibujado con el trazo de la escena, máximo 4 × 4 u.
 
-**Silueta:** todo en negro a 48, 64, 96 y 160 px; pasa si ≥ 4 de 5 dicen «camello» o «dromedario» a 64 px y la C se lee a 96 px.
-**Por tamaño:** ≥ 160 px completo · 64-96 px sin sombra, 2 patas de 1,25 u, herramienta solo si el contexto es ese oficio · 48-63 px busto (C, cuello, cabeza, ojo y sol) · < 48 px no se usa.
+**Qué pose va dónde:** **de pie** = acción (primer uso, «Camello terminado», poses por oficio) · **echado** = espera (lista vacía, sin conexión, página no encontrada).
+**Pendiente conocido:** echado, las patas dobladas todavía recuerdan a una tortuga; se revisa si la prueba con vecinos lo confirma.
+
+**Silueta:** todo en negro a 64, 96 y 160 px; pasa si ≥ 4 de 5 dicen «camello» o «dromedario» a 64 px.
+**Por tamaño:** ≥ 160 px completo · 64-96 px sin sombra ni cola, herramienta solo si el contexto es ese oficio · < 64 px no se usa (va el pin).
 
 **Seis poses** (un solo sol; herramienta en tinta o terracota, nunca amarilla): 1) plomería, llave inglesa; 2) pintura, rodillo y franja de 2 u en
 `--color-accion-suave`; 3) electricidad, enchufe con cable (nunca un rayo amarillo); 4) cocina, delantal en `--color-superficie` con borde y cuchara
@@ -191,7 +201,7 @@ solo una persona física es autora: Decisión Andina 351, art. 3) · rotarlo, es
 ~10 min por persona, sin decir «Camellapp» antes de la prueba 1. **Con 5 personas se reportan conteos («3 de 5»), nunca porcentajes** [NN/g].
 1. **Reconocimiento sin nombre** (método de Romaniuk, *Building Distinctive Brand Assets*, 2018; Romaniuk y Nenycz-Thiel, *Journal of Advertising Research* 54(3), 2014): sol solo, C sola, silueta del camello, terracota + sol, baldosa y 2 distractores. «Pensando en apps para conseguir quién te haga un arreglo en la casa, ¿qué marca, si alguna, te viene a la mente al ver esto?» (hasta 3 marcas o «ninguna»). Ronda A antes de ver la app; ronda B una semana después. Una sola mención de otra marca ya es alerta.
 2. **5 segundos** con la portada y una escena del camello: «¿Qué es?», «¿Para qué sirve?», «¿Qué recuerdas?», «¿Qué animal viste?». Pasa con 4 de 5.
-3. **Preferencia** entre la C hueca y la rellena a 64 px: conteo y razón, sin declarar ganador.
+3. **Las dos poses** a 64 px: «¿Qué animal es?» para cada una, y «¿Son el mismo personaje?». Si 2 o más ven una tortuga en el echado, se rehacen sus patas.
 4. **«Camello» = trabajo:** «¿Qué significa "camello"?», «¿Qué crees que hace Camellapp?». Si 2 o más dicen «buscar empleo», se refuerza el subtítulo.
 5. **Seriedad:** «¿Le confiarías tu casa a un maestro de aquí? (1-5)», «¿El camello te parece serio o de niños?». Si 2 o más dicen «de niños», se reduce su uso.
 Los resultados se anotan aquí, con la fecha y el número de personas.

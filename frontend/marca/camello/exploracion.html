@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camello · exploración de direcciones (laboratorio)</title>
+<!-- Fase 2, pieza 1: exploración (paso que se saltó antes de construir). Bocetos en bruto, 20 × 20 u. No lo usa la app. -->
+<style>
+  :root { --color-fondo:#F7F3EC; --color-superficie:#FFFFFF; --color-accion:#A93F1D; --color-borde:#ece6dc; --sol-500:#F5B300; }
+  .oscuro { --color-fondo:#1B1714; --color-superficie:#1B1714; --color-accion:#E9997A; --color-borde:#3a332d; }
+  .silueta { --color-accion:#000; --color-superficie:#000; --color-borde:#000; --sol-500:#000; }
+  body { margin:0; padding:24px 16px; font:14px/1.4 system-ui,sans-serif; background:#fff; color:#1B1714; }
+  h1 { font-size:20px; margin:0 0 4px; } h2 { font-size:15px; margin:20px 0 6px; } p { margin:0 0 6px; max-width:72ch; }
+  .fila { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-end; }
+  .panel { padding:12px; border-radius:12px; background:var(--color-fondo); display:flex; gap:12px; align-items:flex-end; }
+  figure { margin:0; text-align:center; } figcaption { font-size:12px; color:#6b5f55; }
+  svg { display:block; }
+  .m { fill:var(--color-accion); }
+  .t { fill:none; stroke:var(--color-accion); stroke-linecap:round; stroke-linejoin:round; }
+  .s { fill:var(--sol-500); } .o { fill:var(--color-superficie); } .b { fill:var(--color-borde); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+
+  <!-- 1 · Maciza: cuerpo de masa (no palitos), la C es solo el arco de la joroba con su ventana -->
+  <symbol id="d1" viewBox="0 0 20 20">
+    <rect class="b" x="3" y="18.5" width="12" height="0.75" rx="0.375"/>
+    <path class="t" stroke-width="0.6" d="M3.75 10.5Q2.75 11.25 3 13"/>
+    <path class="t" stroke-width="1.5" d="M5 12.5V18M7 12.5V17.75M11 12.5V18M12.75 12.5V17.75"/>
+    <rect class="m" x="3.5" y="8.75" width="10" height="4.5" rx="2.25"/>
+    <path class="t" stroke-width="2" d="M5.25 9A3.25 3.25 0 0 1 11.75 9"/>
+    <path class="t" stroke-width="2.25" d="M12.5 10.5Q16 12.5 16.25 7.25"/>
+    <rect class="m" x="15" y="5.25" width="4.25" height="2.5" rx="1.25"/>
+    <circle class="o" cx="17" cy="6.1" r="0.45"/>
+    <circle class="s" cx="10.8" cy="6.7" r="1.35"/>
+  </symbol>
+
+  <!-- 2 · Redondo (personaje): cuerpo grande, patas cortas, cabeza grande; la joroba es una C pequeña con el sol -->
+  <symbol id="d2" viewBox="0 0 20 20">
+    <rect class="b" x="4" y="18.5" width="11" height="0.75" rx="0.375"/>
+    <path class="t" stroke-width="1.9" d="M6.75 15V17.75M11.25 15V17.75"/>
+    <circle class="m" cx="9" cy="11.5" r="5"/>
+    <path class="t" stroke-width="1.9" d="M10.9 5.6A2.75 2.75 0 1 0 10.9 9.4"/>
+    <path class="t" stroke-width="2.5" d="M12.75 10.5L14.75 8.25"/>
+    <circle class="m" cx="15.75" cy="6.75" r="2.6"/>
+    <rect class="m" x="16" y="6.5" width="3.25" height="2" rx="1"/>
+    <circle class="o" cx="16.25" cy="6.25" r="0.6"/>
+    <circle class="s" cx="11.2" cy="5.2" r="1.2"/>
+  </symbol>
+
+  <!-- 3 · De línea: el mismo trazo redondo de los íconos Lucide; la joroba dibuja la C del logo -->
+  <symbol id="d3" viewBox="0 0 20 20">
+    <g class="t" stroke-width="0.75">
+      <path d="M3.5 11.25Q2.75 12 3 13.5"/>
+      <path d="M11.25 6.5A3.5 3.5 0 1 0 11 12.25"/>
+      <path d="M4.5 10.75V18M6.75 12.5V18M10.5 12.5V18M12.5 12V18"/>
+      <path d="M4.5 10.75Q4.5 12.5 6.75 12.5H12.5"/>
+      <path d="M12.5 12Q16 12.5 16 8"/>
+      <rect x="15" y="5.75" width="4" height="2.25" rx="1.125"/>
+    </g>
+    <circle class="m" cx="17" cy="6.85" r="0.4"/>
+    <circle class="s" cx="11.8" cy="5.9" r="1.25"/>
+  </symbol>
+
+  <!-- 4 · Echado (sentado): forma compacta y reconocible; patas dobladas; cabe en un cuadrado de estado vacío -->
+  <symbol id="d4" viewBox="0 0 20 20">
+    <rect class="b" x="2.5" y="17.75" width="14" height="0.75" rx="0.375"/>
+    <rect class="m" x="3.5" y="15.75" width="4" height="1.5" rx="0.75"/>
+    <rect class="m" x="9.5" y="15.75" width="4" height="1.5" rx="0.75"/>
+    <rect class="m" x="2.75" y="11" width="11.5" height="5.5" rx="2.75"/>
+    <path class="t" stroke-width="2" d="M10.4 7.1A3 3 0 1 0 10.4 11.4"/>
+    <path class="t" stroke-width="2.25" d="M13.25 13.5Q16.75 15 16.75 10"/>
+    <rect class="m" x="15.25" y="8" width="4.25" height="2.4" rx="1.2"/>
+    <circle class="o" cx="17.25" cy="8.9" r="0.45"/>
+    <circle class="s" cx="10.6" cy="6.6" r="1.3"/>
+  </symbol>
+</defs></svg>
+
+<h1>Camello: 4 direcciones (exploración en bruto)</h1>
+<p>Antes se construyó directo sobre la retícula y salió un diagrama de palitos. Esto es el paso de exploración: 4 ideas distintas, sin pulir.
+Se elige una y después se construye con la retícula de §10.6. Silueta a 160 y 64 px (64 = el tamaño mínimo) y color a 160 px.</p>
+
+<h2>1 · Maciza &nbsp; 2 · Redondo (personaje) &nbsp; 3 · De línea (familia Lucide) &nbsp; 4 · Echado</h2>
+<div class="fila silueta">
+  <figure><svg width="160" height="160"><use href="#d1"/></svg><figcaption>1</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#d2"/></svg><figcaption>2</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#d3"/></svg><figcaption>3</figcaption></figure>
+  <figure><svg width="160" height="160"><use href="#d4"/></svg><figcaption>4</figcaption></figure>
+</div>
+<h2>A 64 px (silueta)</h2>
+<div class="fila silueta">
+  <figure><svg width="64" height="64"><use href="#d1"/></svg><figcaption>1</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#d2"/></svg><figcaption>2</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#d3"/></svg><figcaption>3</figcaption></figure>
+  <figure><svg width="64" height="64"><use href="#d4"/></svg><figcaption>4</figcaption></figure>
+</div>
+<h2>En color, claro y oscuro</h2>
+<div class="fila">
+  <div class="panel"><svg width="140" height="140"><use href="#d1"/></svg><svg width="140" height="140"><use href="#d2"/></svg><svg width="140" height="140"><use href="#d3"/></svg><svg width="140" height="140"><use href="#d4"/></svg></div>
+  <div class="panel oscuro"><svg width="140" height="140"><use href="#d1"/></svg><svg width="140" height="140"><use href="#d2"/></svg><svg width="140" height="140"><use href="#d3"/></svg><svg width="140" height="140"><use href="#d4"/></svg></div>
+</div>
+</body>
+</html>
