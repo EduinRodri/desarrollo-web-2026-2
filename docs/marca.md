@@ -1,4 +1,4 @@
-# Camellapp — Manual de marca (v1, 23 nov 2026)
+# Camellapp — Manual de marca (v2, 27 nov 2026)
 
 > Versión navegable dentro de la app: **/marca**. Este archivo es la fuente de verdad para el equipo.
 
@@ -69,11 +69,11 @@ El punto amarillo es la firma de Camellapp: significa **«listo, bien hecho»**.
 
 ## 7. Iconografía e ilustración
 - **Íconos:** Lucide (ISC), trazo de 2 px, esquinas redondeadas, 16-24 px. Nada de emoji en la interfaz.
-- **Ilustración** (reglas inspiradas en Duolingo): formas simples y redondeadas, máximo 3 colores de la paleta, espacio negativo, **siempre un punto sol**, nada de personas realistas ni ilustraciones de stock. Se dibujan en SVG con los tokens, para que funcionen en modo oscuro.
+- **Ilustración:** formas simples y redondeadas, máximo 3 colores de la paleta, espacio negativo, **siempre un punto sol**, nada de personas realistas ni ilustraciones de stock. Se dibujan en SVG con los tokens, para que funcionen en modo oscuro. **Reglas medibles del sistema: §10.**
 
 ## 8. Movimiento
 Curva estándar `cubic-bezier(0.2, 0, 0, 1)` (Material 3). 120 ms microinteracciones · 200 ms cambios de estado · 300 ms entradas.
-El movimiento explica, no decora. Con «reducir movimiento» activado en el teléfono, todo se vuelve instantáneo.
+El movimiento explica, no decora. Con «reducir movimiento» activado en el teléfono, todo se vuelve instantáneo. **Salidas, celebración y límites: §10.3.**
 
 ## 9. Activos y archivos
 `frontend/marca/` (SVG fuente) → `node scripts/generar-assets.mjs` genera favicon, íconos de app (192, 512, maskable), `apple-touch-icon` e imagen para compartir 1200×630.
@@ -93,8 +93,105 @@ momentos de marca, vacíos y errores. No se mezclan en la misma sección.
   marca, no se puede mantener igual y los avatares ponen caras inventadas a maestros reales.
 
 **Escena del pin** (`components/Ilustraciones.jsx`, `IlustracionHeroe`): se arma con los tres activos distintivos, no con clipart.
-El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. Hoy no está en uso (24 nov: la banda pasó al diseño del equipo); queda para la familia de estados vacíos. Admite una **versión invertida** cambiando los tokens solo en su contenedor (blanco sobre terracota). SVG en línea, `aria-hidden`.
+El **pin** del isotipo es la ventana al barrio; adentro, una fachada costeña de Malambo (casa baja con pretil, arcos de terraza, mecedoras, árbol de patio; **sin palmas ni playa**: Malambo no tiene mar). La **C** del logo es una ruta punteada que pasa por tres oficios (íconos Lucide) y **termina en el punto sol**, como en el isotipo. Hoy no está en uso (24 nov: la banda pasó al diseño del equipo). **Desde el 27 nov queda solo para /marca, la imagen para compartir y los impresos;** los estados vacíos los protagoniza el camello (§10.5). Admite una **versión invertida** cambiando los tokens solo en su contenedor (blanco sobre terracota). SVG en línea, `aria-hidden`.
 **Descartados el 23 nov:** una casa genérica (sin identidad) y un panorama horizontal de la calle (pesado y plano). Lección: primero un sistema de ilustración (retícula, trazo, escalas), después los dibujos.
 
 **Mockups en teléfono** (`docs/mockups/`): capturas **reales de producción** (nunca inventadas) en un marco de celular dibujado en SVG.
 Se regeneran con `node scripts/generar-mockups.mjs` (puppeteer-core con el Edge instalado, tema claro, 390 pt a 2×). Composición 16:9 en `camellapp-mockups.png` (y `.webp` de 1200 px para el README). Un solo punto sol: el de la pantalla. Fuera de la app: pesan demasiado para datos móviles.
+
+## 10. Sistema visual (v2, 27 nov 2026)
+Sale de una investigación en fuentes primarias (IBM Design Language, Shopify Polaris, GitLab Pajamas, Material 3, Atlassian, Carbon, NN/g,
+WCAG, guías de patrón de Ontario Tech, ASU y NWF, GitHub Mona y Mailchimp Freddie). Entre corchetes, la fuente; **«Deducción»** es una
+regla propia que se valida con la prueba con vecinos (§10.7). Unidad: **u = 8 px** a tamaño de diseño.
+
+### 10.1 Ilustración
+1. Retícula de **8 px** con subdivisión de 4 px; toda forma se ajusta a la retícula. [IBM]
+2. Mesas de trabajo: **288 px** (página completa), **160 px** (spot), **96/64 px** (reducida). [GitLab; Deducción]
+3. Formas: círculo, píldora, rectángulo redondeado (radio ≥ 4 px), cuarto de círculo y semicírculo. Ángulos en múltiplos de **15°**. Nada en punta. [IBM]
+4. Forma y hueco mínimos: **8 px** a tamaño de diseño; ningún detalle por debajo de **4 px** ya renderizado. [IBM; Polaris]
+5. **Un solo grosor de trazo por escena: 0,5 u (4 px a 160 px)**, extremos redondeados; nunca menos de 2 px renderizado, igual que Lucide. [Deducción; IBM]
+6. **Máximo 3 colores de la paleta** contando el sol, más neutros; la terracota domina; **exactamente 1 punto sol**. Verde y rojo nunca van en ilustración. Solo tokens `var(--…)`, ningún hex en el SVG. [Polaris; §4; §6]
+7. Perspectiva plana. Sombra = píldora plana en `--color-borde`; sin degradados ni texturas. [Polaris]
+8. **Una idea por ilustración**, con al menos 2 u de espacio negativo alrededor. [Polaris]
+9. Decorativa: `aria-hidden="true"`; la información va siempre en el texto. [Carbon]
+10. SVG en línea, sin imágenes rasterizadas, **≤ 5 KB** después de SVGO. [Deducción]
+11. Lugar: fachada baja, pretil, arcos, mecedoras. **Prohibido:** palmas, playa, tricolor, sombrero vueltiao, café, acordeón decorativo, personas realistas, clipart. [§7; Deducción]
+
+### 10.2 Patrón «baldosa»
+12. Motivo: **cuartos de la C del isotipo**, con el mismo grosor relativo, **recortados por el borde** de la baldosa. Nunca un pin ni una C completa. [Ontario Tech]
+13. Baldosa de **64 × 64 px** que se repite sin costuras; exportación de 512 px para impresos. [ASU; Deducción]
+14. **Un color plano:** `--color-accion` al **12 %** (≈ 1,2:1 contra el fondo en claro y en oscuro). Sin sol, sin degradados, sin otro patrón al lado. [NWF; cálculo propio]
+15. Se aplica con `mask-image` desde un archivo del mismo origen (sin `data:`), para respetar el modo oscuro y la CSP. [Deducción: verificar al construir]
+16. **Permitido:** la banda «Tu talento merece clientes●» de la portada, /marca, la imagen para compartir 1200×630 y los impresos. [Ontario Tech; decisión del 27 nov]
+17. **Prohibido:** detrás de texto (el texto va en un contenedor sólido), en listados, formularios, perfiles, reseñas, modales y flujos de pedido, junto a fotos o capturas, y en la misma composición que el camello. [ASU; Ontario Tech; Deducción]
+
+### 10.3 Movimiento (se suma a §8)
+18. **Las salidas son más rápidas que las entradas:** 300 ms → sale en **200 ms**; 200 ms → sale en **120 ms**. Curva de salida `cubic-bezier(0.3, 0, 1, 1)` (M3 standardAccelerate). [Atlassian; M3]
+19. Solo se animan `transform` y `opacity`. [web.dev]
+20. Las acciones frecuentes no se animan (cambiar de pestaña, abrir un oficio, marcar algo). [Apple; Carbon]
+21. Una animación focal por pantalla. **La celebración «Camello terminado» se anima: ≤ 1 s, con `transform`, una sola vez**, sin bucle y sin bloquear el siguiente paso. Nada se mueve más de 5 s. [Atlassian; WCAG 2.2.2; decisión del 27 nov]
+22. Carga: esqueleto con pulso de opacidad. **Nunca una escena de «vacío» mientras carga.** [NN/g]
+23. Con «reducir movimiento», todo instantáneo, también la celebración. [§8; WCAG 2.3.3]
+24. Sin Lottie ni reproductores: CSS sobre el SVG en línea. [Deducción]
+
+### 10.4 Sonido
+25. **Camellapp no usa sonido ni vibración.** Si algún día se propone: opcional, apagado por defecto, solo tras una acción de la persona y nunca como única señal. [Microsoft; Apple HIG; WCAG 1.4.2]
+
+### 10.5 Marca dentro del producto
+26. **El camello protagoniza los 5 estados de página completa** (máximo uno por pantalla):
+
+| Estado | Expresión | Texto de ejemplo |
+|---|---|---|
+| Primer uso (cliente sin pedidos) | Contento | «Aún no has pedido ningún camello. ¿Qué necesitas arreglar?» |
+| Lista principal vacía (maestro sin pedidos) | Buscando | «Todavía no te llegan pedidos. Completa tu perfil.» |
+| Sin conexión | Preocupado-calmado | «No hay conexión. Revisa tu internet.» |
+| Página no encontrada / error de la app | Pensativo | «Esta página no existe. Volver al inicio.» |
+| «Camello terminado» (reseña enviada) | Celebrando | «¡Gracias! Tu reseña ya ayuda a Jesús.» |
+
+27. **Solo texto:** errores de campo, sesión y contraseña, todo lo de dinero, cancelar o rechazar, reseñas de 1-2 estrellas, búsqueda sin resultados, vacíos dentro de tarjetas, mensajes emergentes, perfil sin reseñas y carga. [Carbon; GitHub; NN/g; Deducción]
+28. La escena del pin (sin camello) queda para /marca, la imagen para compartir y los impresos. [decisión del 27 nov]
+
+### 10.6 Mascota: hoja de personaje del camello
+**Reglas de uso.** Nunca reemplaza al pin ni va en el encabezado, el favicon, el ícono de la app o junto al logo [GitHub]. **No habla:** sin
+bocadillos ni firma de textos [Mailchimp, no verificado]. Tamaño mínimo **48 px**; por debajo, el isotipo. **Sin nombre por ahora:** se les
+pregunta a los vecinos en la prueba. Nada se publica sin la prueba de §10.7.
+
+**Construcción** (mesa de 160 px = 20 × 20 u, mirando a la derecha). Medido en `Marca.jsx`: trazo de la C = 0,56 × su radio; abre 90° entre −45° y +45°;
+punto sol de 0,4 × radio, a 45° arriba a la derecha y a 1,2 radios del centro.
+1. **Joroba y cuerpo = la C del isotipo escalada:** centro (8, 9) u, radio 4 u, trazo 2,25 u, extremos redondeados, `--color-accion`. Arco de arriba = joroba; izquierdo = grupa; de abajo = panza; abertura hacia el pecho.
+   **Variante elegida en principio: C hueca** (interior vacío, como la ventana del logo). Se dibuja también la C sobre cuerpo relleno, solo como silueta, y **gana la hueca si ≥ 4 de 5 vecinos la reconocen como camello a 64 px**.
+2. **Punto sol:** r 1,5 u en (11,4; 5,6) u, **montado sobre el extremo superior del trazo**, nunca suelto (sobre la arena solo da 1,68:1).
+3. **Cuello:** píldora de 1,75 u que sale del extremo inferior de la C, en (10,8; 11,8), y sube a 60°.
+4. **Cabeza:** rectángulo redondeado de 3,5 × 2,5 u (radio 1,25 u), centro (16; 4,5); a ≥ 1 u del sol. **Oreja:** semicírculo r 0,6 u. **Ojo:** círculo r 0,5 u en `--color-superficie`.
+5. **Patas:** 4 píldoras de 1 × 5 u (y = 13 a 18) en x = 5; 6,75; 10; 11,75; las de atrás 0,25 u más cortas. **Sombra:** píldora de 12 × 1 u en y = 18,5, `--color-borde`.
+6. **Herramienta en la pata delantera** (levantada 15°), no dentro de la C, que compite con el sol: el ícono Lucide del oficio redibujado con el trazo de la escena, máximo 4 × 4 u.
+
+**Silueta:** todo en negro a 48, 64, 96 y 160 px; pasa si ≥ 4 de 5 dicen «camello» o «dromedario» a 64 px y la C se lee a 96 px.
+**Por tamaño:** ≥ 160 px completo · 64-96 px sin sombra, 2 patas de 1,25 u, herramienta solo si el contexto es ese oficio · 48-63 px busto (C, cuello, cabeza, ojo y sol) · < 48 px no se usa.
+
+**Seis poses** (un solo sol; herramienta en tinta o terracota, nunca amarilla): 1) plomería, llave inglesa; 2) pintura, rodillo y franja de 2 u en
+`--color-accion-suave`; 3) electricidad, enchufe con cable (nunca un rayo amarillo); 4) cocina, delantal en `--color-superficie` con borde y cuchara
+de palo; 5) niñera, sonajero (sin dibujar niños); 6) eventos, guirnalda de 3 banderines redondeados en el cuello.
+
+**Cuatro expresiones** (solo cambian ojos, boca y orejas; la C y el sol no se mueven): **contento** (ojo en arco ∩, boca en arco corto, orejas arriba) ·
+**pensativo/buscando** (ojo redondo mirando arriba, boca recta, una oreja ladeada 30°, cabeza a 15°) · **preocupado-calmado** (ojo 10 % más pequeño,
+boca apenas curva hacia abajo, orejas atrás 30°; sin lágrimas ni sudor) · **celebrando** (ojos en arco, boca abierta en D, pata levantada; sin confeti amarillo).
+
+**Colores:** cuerpo `--color-accion` (claro #A93F1D, oscuro #E9997A) · ojo `--color-superficie` · sol `--sol-500` · herramienta `--color-texto` /
+`--color-superficie` · sombra `--color-borde`.
+
+**Usos prohibidos:** pagos o precios · seguridad, sesión o contraseñas · disculpas por errores graves · cancelaciones y reseñas negativas · el lugar
+del pin o junto al logo · vender o explicar funciones · interrumpir un flujo (modales, emergentes) · hablar · textura realista, degradados o 3D ·
+casco, uniforme o rasgos humanos · caricaturizar el acento costeño · más de un camello por pantalla · **generarlo o editarlo con IA** (en Colombia
+solo una persona física es autora: Decisión Andina 351, art. 3) · rotarlo, estirarlo o cambiarle los colores · ponerlo sobre la baldosa.
+**Herramienta de dibujo: Penpot** (gratis, MPL-2.0). **Antes de publicar:** una cesión de derechos de una página firmada por quienes lo dibujen.
+
+### 10.7 Prueba con vecinos (gratis, antes de publicar el camello)
+5 vecinos de Malambo que hayan contratado a un maestro en el último año (no del equipo ni familia directa) y, si se puede, uno de fuera de la Costa.
+~10 min por persona, sin decir «Camellapp» antes de la prueba 1. **Con 5 personas se reportan conteos («3 de 5»), nunca porcentajes** [NN/g].
+1. **Reconocimiento sin nombre** (método de Romaniuk, *Building Distinctive Brand Assets*, 2018; Romaniuk y Nenycz-Thiel, *Journal of Advertising Research* 54(3), 2014): sol solo, C sola, silueta del camello, terracota + sol, baldosa y 2 distractores. «Pensando en apps para conseguir quién te haga un arreglo en la casa, ¿qué marca, si alguna, te viene a la mente al ver esto?» (hasta 3 marcas o «ninguna»). Ronda A antes de ver la app; ronda B una semana después. Una sola mención de otra marca ya es alerta.
+2. **5 segundos** con la portada y una escena del camello: «¿Qué es?», «¿Para qué sirve?», «¿Qué recuerdas?», «¿Qué animal viste?». Pasa con 4 de 5.
+3. **Preferencia** entre la C hueca y la rellena a 64 px: conteo y razón, sin declarar ganador.
+4. **«Camello» = trabajo:** «¿Qué significa "camello"?», «¿Qué crees que hace Camellapp?». Si 2 o más dicen «buscar empleo», se refuerza el subtítulo.
+5. **Seriedad:** «¿Le confiarías tu casa a un maestro de aquí? (1-5)», «¿El camello te parece serio o de niños?». Si 2 o más dicen «de niños», se reduce su uso.
+Los resultados se anotan aquí, con la fecha y el número de personas.
