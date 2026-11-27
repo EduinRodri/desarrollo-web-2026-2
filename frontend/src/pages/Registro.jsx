@@ -10,6 +10,7 @@ import { UserPlus } from 'lucide-react'
 import api, { mensajeDeError } from '../api'
 import { Aviso, Campo, CampoContrasena } from '../components/Ui'
 import { Isotipo } from '../components/Marca'
+import { useTitulo } from '../hooks/useTitulo'
 
 const vacio = { nombre: '', correo: '', telefono: '', contrasena: '', acepta_tratamiento_datos: false }
 
@@ -24,6 +25,7 @@ function validar(f) {
 }
 
 export default function Registro() {
+  useTitulo('Crea tu cuenta')
   const navegar = useNavigate()
   const [form, setForm] = useState(vacio)
   const [tocados, setTocados] = useState({})

@@ -28,6 +28,10 @@ api.interceptors.response.use(
   },
 )
 
+// «No existe» (la API respondió 404) no es lo mismo que «no hay señal» (la API no respondió).
+// Mezclarlos le dice a la persona algo falso: que el servicio desapareció cuando solo se cayeron los datos.
+export const esNoEncontrado = (error) => error?.response?.status === 404
+
 // Convierte cualquier error de Axios en un mensaje para mostrarle a la persona.
 export function mensajeDeError(error) {
   if (!error.response) {

@@ -1,6 +1,6 @@
 // Componentes base del sistema de diseño de Camellapp.
 import { useId, useState } from 'react'
-import { AlertCircle, BadgeCheck, CheckCircle2, Eye, EyeOff, Info, Sparkles, Star } from 'lucide-react'
+import { AlertCircle, BadgeCheck, CheckCircle2, Eye, EyeOff, Info, RotateCw, Sparkles, Star, WifiOff } from 'lucide-react'
 
 const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
@@ -133,13 +133,29 @@ export function TarjetaEsqueleto() {
   )
 }
 
-export function EstadoVacio({ ilustracion: Ilustracion, titulo, children, accion }) {
+// esPagina: cuando el estado vacío ES la pantalla (404, «no encontrado», sin conexión), su título es el h1.
+export function EstadoVacio({ ilustracion: Ilustracion, titulo, children, accion, esPagina = false }) {
+  const Titulo = esPagina ? 'h1' : 'h2'
   return (
     <div className="vacio">
       {Ilustracion && <Ilustracion />}
-      <h2>{titulo}</h2>
+      <Titulo className={esPagina ? 'vacio-titulo' : undefined}>{titulo}</Titulo>
       {children && <p>{children}</p>}
       {accion}
     </div>
+  )
+}
+
+// Sin señal: pasa seguido con datos móviles. Se dice qué pasó y se da la salida (reintentar), sin culpar.
+// Ícono de Lucide mientras llega la escena propia (programa visual, pieza E).
+function IconoSinConexion() {
+  return <span className="vacio-icono" aria-hidden="true"><WifiOff /></span>
+}
+export function SinConexion({ onReintentar }) {
+  return (
+    <EstadoVacio esPagina ilustracion={IconoSinConexion} titulo="Sin conexión"
+      accion={<button type="button" className="boton" onClick={onReintentar}><RotateCw aria-hidden="true" /> Reintentar</button>}>
+      No pudimos conectarnos con Camellapp. Revisa tus datos o el wifi e intenta de nuevo.
+    </EstadoVacio>
   )
 }

@@ -14,6 +14,7 @@ import { useToast } from '../context/ToastContext'
 import DialogoConfirmacion from '../components/DialogoConfirmacion'
 import { Avatar, EstadoVacio, Estrellas, SelectorEstrellas } from '../components/Ui'
 import { IlustracionPedidos } from '../components/Ilustraciones'
+import { useTitulo } from '../hooks/useTitulo'
 
 function pedidosReducer(estado, accion) {
   switch (accion.type) {
@@ -105,6 +106,7 @@ function FormResena({ pedido, alGuardar }) {
 }
 
 export default function Pedidos() {
+  useTitulo('Mis pedidos')
   const { usuario } = useAuth()
   const { avisar } = useToast()
   const [como, setComo] = useState('cliente')

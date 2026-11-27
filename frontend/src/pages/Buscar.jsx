@@ -15,9 +15,11 @@ import { Aviso, EstadoVacio, TarjetaEsqueleto } from '../components/Ui'
 import { IlustracionBusqueda } from '../components/Ilustraciones'
 import { ICONOS_GRUPO, NOMBRE_CORTO } from '../components/oficios'
 import { puntaje } from '../reputacion'
+import { useTitulo } from '../hooks/useTitulo'
 
 
 export default function Buscar() {
+  useTitulo('Buscar servicios')
   const { grupos, zonas } = useCatalogo()
   const [params, setParams] = useSearchParams()
   const grupo = params.get('grupo') ?? ''

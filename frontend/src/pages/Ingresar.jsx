@@ -8,8 +8,10 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { Aviso, Campo, CampoContrasena } from '../components/Ui'
 import { Isotipo } from '../components/Marca'
+import { useTitulo } from '../hooks/useTitulo'
 
 export default function Ingresar() {
+  useTitulo('Ingresar')
   const { ingresar } = useAuth()
   const { avisar } = useToast()
   const navegar = useNavigate()

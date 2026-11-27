@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import { useCatalogo } from '../hooks/useCatalogo'
 import { Aviso, Campo } from '../components/Ui'
+import { useTitulo } from '../hooks/useTitulo'
 
 function FormPerfil() {
   const { usuario, actualizarUsuario } = useAuth()
@@ -168,6 +169,7 @@ function MisServicios() {
 }
 
 export default function MiPerfil() {
+  useTitulo('Mi perfil')
   const { usuario } = useAuth()
   return (
     <div className={usuario.es_trabajador ? 'columnas' : ''} style={usuario.es_trabajador ? undefined : { maxWidth: 560, margin: '0 auto' }}>

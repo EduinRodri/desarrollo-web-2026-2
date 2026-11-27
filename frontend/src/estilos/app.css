@@ -229,7 +229,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--c
 .con-boton button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 44px; height: 40px; border: 0; background: none; border-radius: var(--radio-sm); cursor: pointer; color: var(--color-texto-suave); display: grid; place-items: center; }
 .con-boton button svg { width: 20px; height: 20px; }
 .casilla { display: flex; gap: var(--esp-3); align-items: flex-start; font-size: var(--texto-sm); line-height: var(--linea-sm); cursor: pointer; padding: var(--esp-3); border: 1px solid var(--color-borde); border-radius: var(--radio-md); background: var(--color-superficie-suave); }
-.casilla input { width: 22px; height: 22px; min-height: 0; margin: 0; flex-shrink: 0; accent-color: var(--color-accion); cursor: pointer; }
+.casilla input { width: 24px; height: 24px; min-height: 0; margin: 0; flex-shrink: 0; accent-color: var(--color-accion); cursor: pointer; }
 .dos-columnas { display: grid; grid-template-columns: 1fr; gap: var(--esp-4); }
 @media (min-width: 480px) { .dos-columnas { grid-template-columns: 1fr 1fr; } }
 
@@ -352,6 +352,10 @@ dialog p { color: var(--color-texto-suave); margin-top: var(--esp-2); }
 .vacio svg.ilustracion { width: 180px; height: auto; margin-bottom: var(--esp-2); }
 .vacio p { color: var(--color-texto-suave); max-width: 36ch; }
 .vacio .boton { margin-top: var(--esp-3); }
+/* Cuando el estado vacío es la pantalla, su título es el h1 pero se ve del mismo tamaño */
+.vacio .vacio-titulo { font-size: var(--texto-lg); line-height: var(--linea-lg); }
+.vacio-icono { display: grid; place-items: center; width: 96px; height: 96px; margin-bottom: var(--esp-2); border-radius: 999px; background: var(--color-accion-suave); color: var(--color-accion-texto); }
+.vacio-icono svg { width: 40px; height: 40px; }
 
 /* ---------- Mi perfil ---------- */
 .columnas { display: grid; gap: var(--esp-4); grid-template-columns: 1fr; align-items: start; }

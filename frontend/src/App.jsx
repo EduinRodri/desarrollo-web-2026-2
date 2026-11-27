@@ -5,6 +5,7 @@ import { Link, Route, Routes, useLocation } from 'react-router'
 import Navbar from './components/Navbar'
 import RutaProtegida from './components/RutaProtegida'
 import ErrorBoundary from './components/ErrorBoundary'
+import SubirAlCambiarDePagina from './components/SubirAlCambiarDePagina'
 import { Logo } from './components/Marca'
 // El inicio es la pantalla de entrada: se carga con la app para no esperar una segunda descarga (mejor LCP).
 import Inicio from './pages/Inicio'
@@ -25,6 +26,7 @@ export default function App() {
   const { pathname } = useLocation()
   return (
     <>
+      <SubirAlCambiarDePagina />
       <a href="#contenido" className="saltar">Saltar al contenido</a>
       <Navbar />
       <main id="contenido" className="contenedor">

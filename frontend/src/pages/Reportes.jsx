@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import api, { mensajeDeError } from '../api'
 import { Aviso } from '../components/Ui'
+import { useTitulo } from '../hooks/useTitulo'
 
 const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
@@ -27,6 +28,7 @@ function Barras({ titulo, filas, clave }) {
 }
 
 export default function Reportes() {
+  useTitulo('Reportes')
   const [datos, setDatos] = useState(null)
   const [error, setError] = useState('')
 

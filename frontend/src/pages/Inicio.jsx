@@ -5,10 +5,11 @@
 // 7) preguntas frecuentes que responden objeciones, 8) quién está detrás.
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { ArrowRight, ChevronDown, HandCoins, MapPin, Search, ShieldCheck, Star, UserCheck } from 'lucide-react'
+import { ArrowRight, ChevronDown, HandCoins, MapPin, RotateCw, Search, ShieldCheck, Star, UserCheck, WifiOff } from 'lucide-react'
 import api, { pesos } from '../api'
 import { useAuth } from '../context/AuthContext'
 import { useCatalogo } from '../hooks/useCatalogo'
+import { useTitulo } from '../hooks/useTitulo'
 import { puntaje } from '../reputacion'
 import { Avatar, Calificacion, Estrellas, Nivel } from '../components/Ui'
 import { Logo, PuntoSol } from '../components/Marca'
@@ -29,12 +30,25 @@ const ATAJOS = ['Plomería', 'Aire acondicionado', 'Pintura', 'Electricidad']
 // Tarjeta del héroe: un servicio REAL (el mejor calificado), dibujado como nuestra página de detalle.
 // Es HTML, no una imagen: el elemento más grande de la pantalla vuelve a ser el titular (mejor LCP).
 // Mientras llega la API ocupa el mismo alto, para que nada salte (CLS 0).
-function TarjetaHeroe({ servicio }) {
+function TarjetaHeroe({ servicio, sinConexion, onReintentar }) {
+  // Sin señal no se deja el esqueleto para siempre: se dice qué pasó y se ofrece reintentar (mismo lugar, mismo alto)
+  if (sinConexion) {
+    return (
+      <div className="heroe-tarjeta heroe-tarjeta-sin-conexion" role="status">
+        <WifiOff aria-hidden="true" />
+        <strong>Sin conexión</strong>
+        <span className="texto-sm suave">Los servicios aparecen cuando vuelva la señal.</span>
+        <button type="button" className="boton boton-secundario" onClick={onReintentar}><RotateCw aria-hidden="true" /> Reintentar</button>
+      </div>
+    )
+  }
   if (!servicio) return <div className="heroe-tarjeta heroe-tarjeta-cargando" aria-hidden="true"><div className="esqueleto" /></div>
   const { trabajador, categoria, reputacion } = servicio
   return (
-    <Link to={`/servicios/${servicio.id}`} className="heroe-tarjeta" aria-label={`Ejemplo real: ${servicio.titulo}, con ${trabajador.nombre}`}>
-      <span className="heroe-tarjeta-logo"><Logo /></span>
+    // Sin aria-label: el nombre accesible es el texto visible (WCAG 2.5.3, quien dicta por voz dice lo que ve).
+    // El logo es decoración dentro de la tarjeta: se oculta para que el enlace no empiece por «Camellapp».
+    <Link to={`/servicios/${servicio.id}`} className="heroe-tarjeta">
+      <span className="heroe-tarjeta-logo" aria-hidden="true"><Logo /></span>
       <span className="texto-sm suave">Servicios / {categoria.nombre}</span>
       <strong className="heroe-tarjeta-titulo">{servicio.titulo}</strong>
       <span className="fila-flex"><Nivel reputacion={reputacion} /><Calificacion reputacion={reputacion} /></span>
@@ -119,7 +133,23 @@ export default function Inicio() {
   const [texto, setTexto] = useState('')
   // Una sola consulta de servicios para la tarjeta del héroe y los destacados
   const [servicios, setServicios] = useState(null)
-  useEffect(() => { api.get('/servicios', { params: { limite: 50 } }).then(({ data }) => setServicios(data)).catch(() => setServicios([])) }, [])
+  const [sinConexion, setSinConexion] = useState(false)
+  const [intento, setIntento] = useState(0) // cambiarlo vuelve a pedir los servicios
+  useTitulo()
+  useEffect(() => {
+    setSinConexion(false)
+    setServicios(null)
+    api.get('/servicios', { params: { limite: 50 } })
+      .then(({ data }) => setServicios(data))
+      .catch(() => { setServicios([]); setSinConexion(true) })
+  }, [intento])
+  // Si el teléfono recupera la señal, se reintenta solo
+  useEffect(() => {
+    if (!sinConexion) return
+    const volver = () => setIntento((n) => n + 1)
+    window.addEventListener('online', volver)
+    return () => window.removeEventListener('online', volver)
+  }, [sinConexion])
   const top = useMemo(() => mejores(servicios), [servicios])
 
   const buscar = (e) => {
@@ -139,7 +169,7 @@ export default function Inicio() {
           <form className="heroe-busqueda" role="search" onSubmit={buscar}>
             <label htmlFor="q-inicio" className="solo-lector">¿Qué necesitas arreglar?</label>
             <Search aria-hidden="true" />
-            <input id="q-inicio" type="search" enterKeyHint="search" placeholder="Fuga, pintura, aire…" value={texto}
+            <input id="q-inicio" type="search" enterKeyHint="search" placeholder="Fuga, pintura…" value={texto}
               onChange={(e) => setTexto(e.target.value)} autoComplete="off" />
             <button className="boton">Buscar</button>
           </form>
@@ -147,7 +177,7 @@ export default function Inicio() {
             {ATAJOS.map((a) => <Link key={a} to={`/buscar?q=${encodeURIComponent(a)}`} className="chip">{a}</Link>)}
           </nav>
         </div>
-        <TarjetaHeroe servicio={top?.[0]} />
+        <TarjetaHeroe servicio={top?.[0]} sinConexion={sinConexion} onReintentar={() => setIntento((n) => n + 1)} />
       </section>
 
       <section className="bloque" aria-labelledby="t-oficios">

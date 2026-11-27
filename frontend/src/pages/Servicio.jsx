@@ -6,10 +6,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ChevronLeft, ChevronRight, Clock, MapPin, Send } from 'lucide-react'
-import api, { mensajeDeError, pesos } from '../api'
+import api, { esNoEncontrado, mensajeDeError, pesos } from '../api'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
-import { Aviso, Avatar, Calificacion, EstadoVacio, Estrellas, Nivel } from '../components/Ui'
+import { useTitulo } from '../hooks/useTitulo'
+import { Aviso, Avatar, Calificacion, EstadoVacio, Estrellas, Nivel, SinConexion } from '../components/Ui'
 import { IlustracionPerdido } from '../components/Ilustraciones'
 
 function Esqueleto() {
@@ -35,17 +36,24 @@ export default function Servicio() {
   const [resenas, setResenas] = useState([])
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
+  // Por qué falló la carga: 'no-existe' (404) o 'sin-conexion' (no hubo respuesta o el servidor falló)
+  const [fallo, setFallo] = useState(null)
+  const [intento, setIntento] = useState(0) // cambiarlo vuelve a cargar (botón «Reintentar»)
+  useTitulo(servicio ? servicio.titulo : fallo === 'no-existe' ? 'Servicio no encontrado' : 'Servicio')
 
   useEffect(() => {
     setServicio(null)
+    setFallo(null)
     api.get(`/servicios/${id}`)
       .then(({ data }) => {
         setServicio(data)
+        // Las reseñas son un extra: si fallan, la página igual sirve para pedir
         return api.get(`/trabajadores/${data.trabajador.id}`)
+          .then(({ data: perfil }) => setResenas(perfil.resenas.slice(0, 3)))
+          .catch(() => setResenas([]))
       })
-      .then(({ data }) => setResenas(data.resenas.slice(0, 3)))
-      .catch((e) => setError(mensajeDeError(e)))
-  }, [id])
+      .catch((e) => setFallo(esNoEncontrado(e) ? 'no-existe' : 'sin-conexion'))
+  }, [id, intento])
 
   const pedir = async () => {
     if (!usuario) return navegar('/ingresar', { state: { desde: `/servicios/${id}` } })
@@ -62,9 +70,12 @@ export default function Servicio() {
     }
   }
 
-  if (error && !servicio) {
-    return <EstadoVacio ilustracion={IlustracionPerdido} titulo="No encontramos este servicio"
-      accion={<Link to="/buscar" className="boton">Buscar otros servicios</Link>}>{error}</EstadoVacio>
+  if (fallo === 'sin-conexion') return <SinConexion onReintentar={() => setIntento((n) => n + 1)} />
+  if (fallo === 'no-existe') {
+    return <EstadoVacio esPagina ilustracion={IlustracionPerdido} titulo="No encontramos este servicio"
+      accion={<Link to="/buscar" className="boton">Buscar otros servicios</Link>}>
+      Puede que el maestro lo haya pausado o que el enlace esté mal escrito.
+    </EstadoVacio>
   }
   if (!servicio) return <Esqueleto />
 

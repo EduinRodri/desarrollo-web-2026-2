@@ -25,6 +25,8 @@
   box-shadow: 0 24px 48px -12px rgb(110 40 18 / 0.25), var(--sombra-1); transition: transform var(--dur-media) var(--curva); }
 .heroe-tarjeta-cargando { min-height: 300px; }
 .heroe-tarjeta-cargando .esqueleto { flex: 1; }
+.heroe-tarjeta-sin-conexion { min-height: 300px; align-items: center; justify-content: center; text-align: center; }
+.heroe-tarjeta-sin-conexion > svg { width: 32px; height: 32px; color: var(--color-texto-suave); }
 @media (min-width: 900px) { .heroe-tarjeta { transform: rotate(2deg); } .heroe-tarjeta:hover { transform: rotate(0deg) translateY(-2px); } }
 .heroe-tarjeta-logo { display: inline-flex; align-items: center; gap: var(--esp-2); font-weight: var(--peso-fuerte); font-size: var(--texto-lg); }
 .heroe-tarjeta-logo svg { width: 28px; height: 28px; }
@@ -47,6 +49,8 @@
 .heroe-busqueda > svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--color-texto-suave); }
 .heroe-busqueda input { border: 0; box-shadow: none !important; padding-left: 40px; min-width: 0; }
 .heroe-busqueda .boton { flex-shrink: 0; }
+/* Celulares angostos: sin la lupa decorativa, para que el ejemplo del campo se lea completo */
+@media (max-width: 399px) { .heroe-busqueda > svg { display: none; } .heroe-busqueda input { padding-left: var(--esp-3); } }
 
 /* ---------- Bloques de la landing ---------- */
 .bloque { margin-top: var(--esp-12); }

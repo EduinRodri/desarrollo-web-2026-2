@@ -4,9 +4,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { MapPin } from 'lucide-react'
-import api, { mensajeDeError } from '../api'
+import api, { esNoEncontrado } from '../api'
 import TarjetaServicio from '../components/TarjetaServicio'
-import { Avatar, EstadoVacio, Estrellas, MIN_RESENAS_PROMEDIO, Nivel } from '../components/Ui'
+import { useTitulo } from '../hooks/useTitulo'
+import { Avatar, EstadoVacio, Estrellas, MIN_RESENAS_PROMEDIO, Nivel, SinConexion } from '../components/Ui'
 import { IlustracionPerdido } from '../components/Ilustraciones'
 
 const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
@@ -14,15 +15,25 @@ const numero = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximu
 export default function Trabajador() {
   const { id } = useParams()
   const [perfil, setPerfil] = useState(null)
-  const [error, setError] = useState('')
+  // Por qué falló la carga: 'no-existe' (404) o 'sin-conexion' (no hubo respuesta o el servidor falló)
+  const [fallo, setFallo] = useState(null)
+  const [intento, setIntento] = useState(0) // cambiarlo vuelve a cargar (botón «Reintentar»)
+  useTitulo(perfil ? perfil.trabajador.nombre : fallo === 'no-existe' ? 'Perfil no encontrado' : 'Perfil')
 
   useEffect(() => {
-    api.get(`/trabajadores/${id}`).then(({ data }) => setPerfil(data)).catch((e) => setError(mensajeDeError(e)))
-  }, [id])
+    setPerfil(null)
+    setFallo(null)
+    api.get(`/trabajadores/${id}`)
+      .then(({ data }) => setPerfil(data))
+      .catch((e) => setFallo(esNoEncontrado(e) ? 'no-existe' : 'sin-conexion'))
+  }, [id, intento])
 
-  if (error) {
-    return <EstadoVacio ilustracion={IlustracionPerdido} titulo="No encontramos este perfil"
-      accion={<Link to="/buscar" className="boton">Buscar trabajadores</Link>}>{error}</EstadoVacio>
+  if (fallo === 'sin-conexion') return <SinConexion onReintentar={() => setIntento((n) => n + 1)} />
+  if (fallo === 'no-existe') {
+    return <EstadoVacio esPagina ilustracion={IlustracionPerdido} titulo="No encontramos este perfil"
+      accion={<Link to="/buscar" className="boton">Buscar trabajadores</Link>}>
+      Puede que el enlace esté mal escrito o que la cuenta ya no exista.
+    </EstadoVacio>
   }
   if (!perfil) return <div className="tarjeta" aria-busy="true"><div className="esqueleto" style={{ height: 180 }} /></div>
 

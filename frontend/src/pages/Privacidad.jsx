@@ -1,6 +1,9 @@
 // Tratamiento de datos personales (Ley 1581 de 2012). Lenguaje claro: la gente lo lee si se entiende.
 // Texto propio de un proyecto académico; no reemplaza asesoría legal.
+import { useTitulo } from '../hooks/useTitulo'
+
 export default function Privacidad() {
+  useTitulo('Tratamiento de datos')
   return (
     <article className="tarjeta lectura">
       <h1>Cómo cuidamos tus datos</h1>

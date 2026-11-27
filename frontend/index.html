@@ -11,6 +11,9 @@
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- Abre la conexión con la API mientras carga el JavaScript: el detalle y el perfil
+         dependen de ella para pintar su título (LCP). Vite reemplaza la variable al compilar. -->
+    <link rel="preconnect" href="%VITE_API_URL%" crossorigin />
     <!-- Vista previa al compartir el enlace (WhatsApp, Facebook) -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="es_CO" />

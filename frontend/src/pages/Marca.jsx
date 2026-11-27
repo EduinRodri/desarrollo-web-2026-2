@@ -2,6 +2,7 @@
 import { Ban, Check } from 'lucide-react'
 import { Isotipo, Logo, PuntoSol } from '../components/Marca'
 import { IlustracionBusqueda, IlustracionPedidos, IlustracionPerdido } from '../components/Ilustraciones'
+import { useTitulo } from '../hooks/useTitulo'
 
 const COLORES = [
   ['Terracota 600', '#A93F1D', '--terra-600', 'Marca y acción principal. Una por pantalla.', '#fff'],
@@ -20,6 +21,7 @@ const VOZ = [
 ]
 
 export default function Marca() {
+  useTitulo('Manual de marca')
   return (
     <div className="manual">
       <header className="manual-portada">
